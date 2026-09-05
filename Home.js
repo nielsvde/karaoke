@@ -83,14 +83,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      // Standaard een willekeurig nummer laden als de afspeellijst gevuld is
+      // Laad standaard een willekeurig nummer in zodra de afspeellijst geladen is
       if (window.playlist.length > 0) {
         const randomIndex = Math.floor(Math.random() * window.playlist.length);
         if (typeof window.loadTrackFromPlaylist === 'function') {
           window.loadTrackFromPlaylist(randomIndex, false);
         }
       }
-
     } catch (err) {
       console.error("NAS ophaalfout:", err);
     }
@@ -196,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Luister naar het 'ended' event op het audio element om automatisch terug te keren naar de home-weergave
+  // Keer automatisch terug naar het home scherm wanneer een nummer is afgelopen
   const audioPlayer = document.getElementById("audioPlayer") || document.querySelector("audio");
   if (audioPlayer) {
     audioPlayer.addEventListener("ended", () => {
