@@ -184,6 +184,184 @@
       background: rgba(239, 68, 68, 0.25);
     }
 
+    /* GEBRUIKERS VIEW & TRACK CARD STYLING */
+    .user-hero-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .user-hero-cover {
+      width: 140px;
+      height: 140px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    }
+
+    .user-hero-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-hero-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-hero-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .btn-start-hero {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      color: white;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .btn-start-hero:hover:not(:disabled) {
+      transform: translateY(-2px);
+      opacity: 0.95;
+    }
+
+    .btn-start-hero:disabled {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* MUZIEKBIBLIOTHEEK STYLING */
+    .library-section {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    .library-header {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .user-search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .user-search-input:focus {
+      border-color: var(--primary);
+    }
+
+    .user-library-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .user-library-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .user-library-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .user-library-item.active {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    .user-item-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .user-item-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-item-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    /* STANDAARD BEHEERDER/TRACK STYLING */
     .track-card {
       background: rgba(15, 23, 42, 0.6);
       border: 1px solid var(--border-color);
@@ -294,13 +472,6 @@
       font-weight: 600;
       border: 1px solid rgba(99, 102, 241, 0.4);
     }
-    .playlist-item-title {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
-      padding-right: 8px;
-    }
 
     input[type="file"] { display: none; }
 
@@ -352,7 +523,6 @@
       padding: 60px 12px;
       text-align: center;
       scroll-behavior: smooth;
-      border-bottom: none !important;
       scrollbar-width: none;
       -ms-overflow-style: none;
       -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
@@ -372,10 +542,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: transparent;
       border: none;
-      transform-origin: center center;
-      white-space: normal;
       word-break: break-word;
       overflow-wrap: break-word;
       text-wrap: balance;
@@ -551,7 +718,7 @@
   <!-- APP INHOUD -->
   <div class="container">
     <header>
-      <h1>Karaoke party</h1>
+      <h1>Karaoke Party</h1>
     </header>
 
     <div class="kar-actions">
@@ -568,24 +735,51 @@
       <input type="file" id="zipInput" accept=".kar,.zip,application/x-zip-compressed,application/zip,application/octet-stream" multiple>
     </div>
 
-    <!-- Nummer Informatie Kaart -->
-    <div class="track-card">
-      <div class="track-cover" id="coverContainer">🎵</div>
-      <div class="track-info">
-        <div class="track-title" id="trackTitle">Geen nummer geladen</div>
-        <div class="track-status" id="trackStatus">Selecteer een nummer om te beginnen</div>
+    <!-- GEBRUIKERS STARTINTERFACE (ZICHTBAAR VOOR NORMAL USERS) -->
+    <div id="userStartView" style="display: none;">
+      <div class="user-hero-card">
+        <div class="user-hero-cover" id="userHeroCover">🎵</div>
+        <div class="user-hero-title" id="userHeroTitle">Geen nummer gekozen</div>
+        <div class="user-hero-subtitle" id="userHeroStatus">Kies een nummer uit de bibliotheek</div>
+        <button type="button" class="btn-start-hero" id="userStartBtn" disabled>
+          <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Start Karaoke
+        </button>
+      </div>
+
+      <div class="library-section">
+        <div class="library-header">
+          <span>📚 Muziekbibliotheek</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);" id="userLibCount">0 nummers</span>
+        </div>
+        <input type="text" class="user-search-input" id="userSearchInput" placeholder="🔍 Zoek op titel of artiest...">
+        <div class="user-library-grid" id="userLibraryList">
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 20px;">Geen nummers geladen. Open een .KAR bestand om de lijst te vullen.</div>
+        </div>
       </div>
     </div>
 
-    <!-- Afspeellijst / Menu -->
-    <div class="playlist-section" id="playlistSection">
-      <div class="playlist-header" id="playlistHeader">
-        <span>📚 Afspeellijst / Menu</span>
-        <span class="playlist-count" id="playlistCount">0</span>
+    <!-- BEHEERDER INTERFACE (GEAVANCEERDE CONTROLS) -->
+    <div id="adminControlsView">
+      <!-- Nummer Informatie Kaart -->
+      <div class="track-card">
+        <div class="track-cover" id="coverContainer">🎵</div>
+        <div class="track-info">
+          <div class="track-title" id="trackTitle">Geen nummer geladen</div>
+          <div class="track-status" id="trackStatus">Selecteer een nummer om te beginnen</div>
+        </div>
       </div>
-      <div class="playlist-body" id="playlistBody">
-        <input type="text" class="playlist-search" id="playlistSearch" placeholder="Zoek nummer..." aria-label="Zoek nummer in afspeellijst">
-        <ul class="playlist-list" id="playlistList"></ul>
+
+      <!-- Afspeellijst / Menu -->
+      <div class="playlist-section" id="playlistSection">
+        <div class="playlist-header" id="playlistHeader">
+          <span>📚 Afspeellijst / Menu</span>
+          <span class="playlist-count" id="playlistCount">0</span>
+        </div>
+        <div class="playlist-body" id="playlistBody">
+          <input type="text" class="playlist-search" id="playlistSearch" placeholder="Zoek nummer..." aria-label="Zoek nummer in afspeellijst">
+          <ul class="playlist-list" id="playlistList"></ul>
+        </div>
       </div>
     </div>
 
@@ -651,72 +845,75 @@
       </div>
     </div>
 
-    <!-- Offset Besturing -->
-    <div class="offset-control">
-      <div class="offset-header">
-        <span class="offset-title">⏱️ Tekst Vertraging:</span>
-        <span class="offset-value" id="offsetDisplay">+0.0s</span>
-      </div>
-      <div class="slider-wrapper">
-        <input type="range" id="offsetSlider" min="-10" max="10" step="0.1" value="0.0" aria-label="Tekst vertraging aanpassen">
-      </div>
-      <div class="offset-btns">
-        <button type="button" class="btn-offset" id="btnOffsetMinus4">-0.4s</button>
-        <button type="button" class="btn-offset" id="btnOffsetMinus2">-0.2s</button>
-        <button type="button" class="btn-offset" id="btnOffsetMinus1">-0.1s</button>
-        <button type="button" class="btn-offset reset" id="btnOffsetReset">0.0s</button>
-        <button type="button" class="btn-offset" id="btnOffsetPlus1">+0.1s</button>
-        <button type="button" class="btn-offset" id="btnOffsetPlus2">+0.2s</button>
-        <button type="button" class="btn-offset" id="btnOffsetPlus4">+0.4s</button>
-      </div>
-    </div>
-
-    <!-- Hoofd Voortgangsbalk -->
-    <div class="progress-section">
-      <input type="range" id="seekSlider" min="0" max="100" value="0" disabled aria-label="Voortgang afspelen">
-      <div class="time-display">
-        <span id="currentTime">00:00</span>
-        <span id="durationTime">00:00</span>
-      </div>
-    </div>
-
-    <!-- Hoofdbediening -->
-    <div class="controls-main">
-      <button type="button" id="playBtn" class="btn-action btn-play" disabled>
-        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-        Afspelen
-      </button>
-      <button type="button" id="stopBtn" class="btn-action btn-stop" disabled>
-        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg>
-        Stop
-      </button>
-    </div>
-
-    <!-- Mixer Sectie -->
-    <div class="mixer-section">
-      <div class="channel">
-        <div class="channel-header">
-          <span class="channel-title" style="color: var(--accent-vocal);">🎤 Zang Volume</span>
-          <span class="channel-val" id="vocalVolVal">100%</span>
+    <!-- Offset & Voortgang (voor Beheer / Verborgen voor User) -->
+    <div id="advancedMixerSection">
+      <!-- Offset Besturing -->
+      <div class="offset-control">
+        <div class="offset-header">
+          <span class="offset-title">⏱️ Tekst Vertraging:</span>
+          <span class="offset-value" id="offsetDisplay">+0.0s</span>
         </div>
         <div class="slider-wrapper">
-          <input type="range" id="vocalVol" min="0" max="1" step="0.01" value="1" aria-label="Zang Volume">
+          <input type="range" id="offsetSlider" min="-10" max="10" step="0.1" value="0.0" aria-label="Tekst vertraging aanpassen">
         </div>
-        <div class="presets">
-          <button type="button" class="btn-preset mute" id="vocalMuteBtn">Mute</button>
-          <button type="button" class="btn-preset" id="mainPreset30">30%</button>
-          <button type="button" class="btn-preset" id="mainPreset70">70%</button>
-          <button type="button" class="btn-preset active" id="mainPreset100">100%</button>
+        <div class="offset-btns">
+          <button type="button" class="btn-offset" id="btnOffsetMinus4">-0.4s</button>
+          <button type="button" class="btn-offset" id="btnOffsetMinus2">-0.2s</button>
+          <button type="button" class="btn-offset" id="btnOffsetMinus1">-0.1s</button>
+          <button type="button" class="btn-offset reset" id="btnOffsetReset">0.0s</button>
+          <button type="button" class="btn-offset" id="btnOffsetPlus1">+0.1s</button>
+          <button type="button" class="btn-offset" id="btnOffsetPlus2">+0.2s</button>
+          <button type="button" class="btn-offset" id="btnOffsetPlus4">+0.4s</button>
         </div>
       </div>
 
-      <div class="channel">
-        <div class="channel-header">
-          <span class="channel-title" style="color: var(--accent-music);">🎵 Muziek Volume</span>
-          <span class="channel-val" id="musicVolVal">100%</span>
+      <!-- Hoofd Voortgangsbalk -->
+      <div class="progress-section">
+        <input type="range" id="seekSlider" min="0" max="100" value="0" disabled aria-label="Voortgang afspelen">
+        <div class="time-display">
+          <span id="currentTime">00:00</span>
+          <span id="durationTime">00:00</span>
         </div>
-        <div class="slider-wrapper">
-          <input type="range" id="musicVol" min="0" max="1" step="0.01" value="1" aria-label="Muziek Volume">
+      </div>
+
+      <!-- Hoofdbediening -->
+      <div class="controls-main">
+        <button type="button" id="playBtn" class="btn-action btn-play" disabled>
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          Afspelen
+        </button>
+        <button type="button" id="stopBtn" class="btn-action btn-stop" disabled>
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg>
+          Stop
+        </button>
+      </div>
+
+      <!-- Mixer Sectie -->
+      <div class="mixer-section">
+        <div class="channel">
+          <div class="channel-header">
+            <span class="channel-title" style="color: var(--accent-vocal);">🎤 Zang Volume</span>
+            <span class="channel-val" id="vocalVolVal">100%</span>
+          </div>
+          <div class="slider-wrapper">
+            <input type="range" id="vocalVol" min="0" max="1" step="0.01" value="1" aria-label="Zang Volume">
+          </div>
+          <div class="presets">
+            <button type="button" class="btn-preset mute" id="vocalMuteBtn">Mute</button>
+            <button type="button" class="btn-preset" id="mainPreset30">30%</button>
+            <button type="button" class="btn-preset" id="mainPreset70">70%</button>
+            <button type="button" class="btn-preset active" id="mainPreset100">100%</button>
+          </div>
+        </div>
+
+        <div class="channel">
+          <div class="channel-header">
+            <span class="channel-title" style="color: var(--accent-music);">🎵 Muziek Volume</span>
+            <span class="channel-val" id="musicVolVal">100%</span>
+          </div>
+          <div class="slider-wrapper">
+            <input type="range" id="musicVol" min="0" max="1" step="0.01" value="1" aria-label="Muziek Volume">
+          </div>
         </div>
       </div>
     </div>
@@ -743,153 +940,6 @@
   <script src="auth.js"></script>
   <script src="admin.js"></script>
   <script src="player.js"></script>
-
-  <!-- Login & Modal Handlers -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const btnOpenLocal = document.getElementById("btnOpenLocal");
-      const zipInput = document.getElementById("zipInput");
-      const btnLoginModal = document.getElementById("btnLoginModal");
-      const btnLogout = document.getElementById("btnLogout");
-      const authModal = document.getElementById("authModal");
-      const adminModal = document.getElementById("adminModal");
-      const btnCloseAdminModal = document.getElementById("btnCloseAdminModal");
-      const loginForm = document.getElementById("loginForm");
-      const loginUser = document.getElementById("loginUser");
-      const loginPin = document.getElementById("loginPin");
-      const statusBar = document.getElementById("statusBar");
-
-      const EXPIRATION_TIME_MS = 24 * 60 * 60 * 1000; // 24 uur in ms
-
-      // 0. Vul automatisch de opgeslagen gebruikersnaam in
-      const savedUsername = localStorage.getItem("karaoke_saved_username");
-      if (savedUsername && loginUser) {
-        loginUser.value = savedUsername;
-      }
-
-      // Functie voor uitloggen en de interface updaten
-      function logoutSession() {
-        localStorage.removeItem("karaoke_admin_token");
-        localStorage.removeItem("karaoke_role");
-        localStorage.removeItem("karaoke_login_time");
-        
-        if (authModal) authModal.classList.remove("hidden");
-        if (btnLoginModal) btnLoginModal.textContent = "🔐 Inloggen";
-        if (btnLogout) btnLogout.style.display = "none";
-        if (statusBar) statusBar.textContent = "Log in om te beginnen...";
-      }
-
-      // 1. Controleer bestaande sessie
-      function checkAuthStatus() {
-        const token = localStorage.getItem("karaoke_admin_token");
-        const role = localStorage.getItem("karaoke_role");
-        const loginTime = localStorage.getItem("karaoke_login_time");
-        const now = Date.now();
-
-        if (token && loginTime && (now - parseInt(loginTime, 10) < EXPIRATION_TIME_MS)) {
-          authModal.classList.add("hidden");
-          if (btnLogout) btnLogout.style.display = "flex";
-
-          if (role === "admin") {
-            btnLoginModal.textContent = "⚙️ Gebruikersbeheer";
-            if (statusBar) statusBar.textContent = "Ingelogd als beheerder.";
-          } else {
-            btnLoginModal.textContent = "👤 Ingelogd";
-            if (statusBar) statusBar.textContent = "Ingelogd als gebruiker.";
-          }
-        } else {
-          logoutSession();
-        }
-      }
-
-      checkAuthStatus();
-
-      // Event listener voor de Uitlogknop
-      if (btnLogout) {
-        btnLogout.addEventListener("click", () => {
-          logoutSession();
-        });
-      }
-
-      // Lokale bestanden openen
-      if (btnOpenLocal && zipInput) {
-        btnOpenLocal.addEventListener("click", () => zipInput.click());
-      }
-
-      // Inlog/Beheer knop
-      if (btnLoginModal) {
-        btnLoginModal.addEventListener("click", () => {
-          const currentRole = localStorage.getItem("karaoke_role");
-          if (currentRole === "admin") {
-            if (adminModal) adminModal.classList.add("open");
-            if (typeof loadAdminUsers === "function") loadAdminUsers();
-          } else {
-            authModal.classList.remove("hidden");
-          }
-        });
-      }
-
-      // Modals sluiten
-      const closeModal = (modal) => modal && modal.classList.remove("open");
-
-      if (btnCloseAdminModal && adminModal) {
-        btnCloseAdminModal.addEventListener("click", () => closeModal(adminModal));
-      }
-
-      if (adminModal) {
-        adminModal.addEventListener("click", (e) => {
-          if (e.target === adminModal) closeModal(adminModal);
-        });
-      }
-
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeModal(adminModal);
-      });
-
-      // Inlogformulier afhandelen
-      if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const user = loginUser?.value.trim();
-          const pass = loginPin?.value;
-
-          if (!user || !pass) return;
-
-          if (statusBar) statusBar.textContent = "Verbinden met NAS...";
-
-          try {
-            const response = await fetch("https://karaokenas.synology.me:8444/karaoke/api.php?action=login", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ username: user, password: pass })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-              const userRole = data.role || (user.toLowerCase() === 'admin' ? 'admin' : 'user');
-              
-              localStorage.setItem("karaoke_admin_token", data.token);
-              localStorage.setItem("karaoke_role", userRole);
-              localStorage.setItem("karaoke_login_time", Date.now().toString());
-              localStorage.setItem("karaoke_saved_username", user);
-
-              authModal.classList.add("hidden");
-              if (loginPin) loginPin.value = ""; 
-
-              checkAuthStatus();
-            } else {
-              alert("Inloggen mislukt: " + (data.message || "Onjuiste gegevens"));
-              if (statusBar) statusBar.textContent = "Inloggen mislukt.";
-            }
-          } catch (err) {
-            console.error("Fout tijdens inloggen:", err);
-            alert("Kan geen verbinding maken met de NAS.");
-            if (statusBar) statusBar.textContent = "Verbindingsfout NAS.";
-          }
-        });
-      }
-    });
-  </script>
+  <script src="Home.js"></script>
 </body>
 </html>
