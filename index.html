@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0f172a">
-  <title>Karaoke party</title>
+  <title>Karaoke Party</title>
 
-  <!-- JSZip voor het verwerken van het .kar pakket -->
+  <!-- Externe Bibliotheken -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
+  <!-- Stylesheets -->
   <style>
     :root {
       --bg-main: #0f172a;
@@ -89,7 +90,6 @@
     }
     .btn-zip:hover { background: rgba(255, 255, 255, 0.15); }
 
-    /* Titel en Afbeelding Card */
     .track-card {
       background: rgba(15, 23, 42, 0.6);
       border: 1px solid var(--border-color);
@@ -114,13 +114,8 @@
       flex-shrink: 0;
       overflow: hidden;
     }
-    .track-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .track-cover img { width: 100%; height: 100%; object-fit: cover; }
     .track-info { overflow: hidden; flex: 1; }
-    
     .track-title { 
       font-size: 0.95rem; 
       font-weight: 700; 
@@ -134,7 +129,6 @@
     }
     .track-status { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
 
-    /* Playlist / Menu Sectie */
     .playlist-section {
       background: rgba(15, 23, 42, 0.5);
       border: 1px solid var(--border-color);
@@ -264,30 +258,13 @@
       padding: 60px 12px;
       text-align: center;
       scroll-behavior: smooth;
-
       border-bottom: none !important;
       scrollbar-width: none;
       -ms-overflow-style: none;
-
-      -webkit-mask-image: linear-gradient(
-        to bottom,
-        transparent 0%,
-        black 20%,
-        black 80%,
-        transparent 100%
-      );
-      mask-image: linear-gradient(
-        to bottom,
-        transparent 0%,
-        black 20%,
-        black 80%,
-        transparent 100%
-      );
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
     }
-
-    .lyrics-container::-webkit-scrollbar {
-      display: none;
-    }
+    .lyrics-container::-webkit-scrollbar { display: none; }
 
     .lyric-line {
       padding: 6px 12px;
@@ -304,7 +281,6 @@
       background: transparent;
       border: none;
       transform-origin: center center;
-      
       white-space: normal;
       word-break: break-word;
       overflow-wrap: break-word;
@@ -319,7 +295,6 @@
       text-shadow: 0 0 12px rgba(255, 255, 255, 0.8), 0 0 24px rgba(99, 102, 241, 0.6);
     }
 
-    /* Fullscreen Modus Styling */
     .lyrics-wrapper.fullscreen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       z-index: 9999;
@@ -328,108 +303,55 @@
       display: flex; flex-direction: column;
     }
     .lyrics-wrapper.fullscreen .lyrics-container { 
-      flex: 1; 
-      height: auto; 
-      border-radius: 20px; 
-      padding: 20vh 16px 40px 16px; 
-      margin-bottom: 12px;
-      transition: all 0.35s ease;
+      flex: 1; height: auto; border-radius: 20px; padding: 20vh 16px 40px 16px; margin-bottom: 12px; transition: all 0.35s ease;
     }
     .lyrics-wrapper.fullscreen .lyric-line { 
-      font-size: clamp(1.2rem, 3.5vw, 2.2rem); 
-      padding: 8px 12px; 
-      margin-bottom: 12px; 
-      min-height: 52px; 
-      max-width: 92vw;
+      font-size: clamp(1.2rem, 3.5vw, 2.2rem); padding: 8px 12px; margin-bottom: 12px; min-height: 52px; max-width: 92vw;
     }
     .lyrics-wrapper.fullscreen .lyric-line.active { 
-      transform: scale(1.08); 
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 35px rgba(168, 85, 247, 0.7); 
+      transform: scale(1.08); text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 35px rgba(168, 85, 247, 0.7); 
     }
     .lyrics-wrapper.fullscreen .btn-fullscreen { display: none !important; }
     .lyrics-wrapper.fullscreen .btn-close-fullscreen { display: flex !important; }
 
-    /* Inklapbare spelerbalk onderaan Fullscreen */
     .fs-player-overlay {
-      display: none;
-      position: relative;
-      width: 100%;
-      max-width: 460px;
-      margin: 0 auto;
-      z-index: 10001;
-      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-      transition: all 0.35s ease;
+      display: none; position: relative; width: 100%; max-width: 460px; margin: 0 auto; z-index: 10001;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transition: all 0.35s ease;
     }
     .lyrics-wrapper.fullscreen .fs-player-overlay { display: block; }
 
     .fs-toggle-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(30, 41, 59, 0.95);
-      border: 1px solid var(--border-color);
-      border-bottom: none;
-      color: var(--text-muted);
-      width: 48px;
-      height: 24px;
-      border-radius: 12px 12px 0 0;
-      margin: 0 auto;
-      cursor: pointer;
-      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(30, 41, 59, 0.95); border: 1px solid var(--border-color); border-bottom: none;
+      color: var(--text-muted); width: 48px; height: 24px; border-radius: 12px 12px 0 0;
+      margin: 0 auto; cursor: pointer; backdrop-filter: blur(8px);
     }
     .fs-toggle-btn svg { transition: transform 0.3s ease; }
     .fs-toggle-btn.collapsed svg { transform: rotate(180deg); }
 
     .fs-card-inner {
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid var(--border-color);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 20px;
-      padding: 16px;
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.7);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      transition: max-height 0.35s ease, opacity 0.35s ease, padding 0.35s ease;
-      overflow: hidden;
+      background: rgba(15, 23, 42, 0.95); border: 1px solid var(--border-color);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px; padding: 16px; box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.7);
+      display: flex; flex-direction: column; gap: 12px; transition: max-height 0.35s ease, opacity 0.35s ease, padding 0.35s ease; overflow: hidden;
     }
 
     .fs-player-overlay.collapsed .controls-main,
-    .fs-player-overlay.collapsed .channel {
-      display: none !important;
-    }
-
-    .fs-player-overlay.collapsed .fs-card-inner {
-      padding: 12px 16px;
-      gap: 0;
-    }
+    .fs-player-overlay.collapsed .channel { display: none !important; }
+    .fs-player-overlay.collapsed .fs-card-inner { padding: 12px 16px; gap: 0; }
 
     .offset-control {
-      background: rgba(15, 23, 42, 0.5);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 20px;
+      background: rgba(15, 23, 42, 0.5); border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
     }
     .offset-header { display: flex; justify-content: space-between; align-items: center; }
     .offset-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
     .offset-value { font-size: 0.9rem; font-weight: 700; color: var(--accent-lrc); font-family: monospace; }
     .offset-btns { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
     .btn-offset {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      padding: 6px 0;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
+      flex: 1; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border-color);
+      color: var(--text-main); padding: 6px 0; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; text-align: center;
     }
     .btn-offset:hover { background: rgba(255, 255, 255, 0.15); }
     .btn-offset.reset { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); }
@@ -474,6 +396,32 @@
     .btn-preset.mute.active { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); }
 
     .status-bar { margin-top: 18px; text-align: center; font-size: 0.75rem; color: var(--text-muted); }
+
+    /* Modal styling voor Auth / Admin */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 20000;
+      align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: #1e293b; border: 1px solid var(--border-color); border-radius: var(--radius);
+      padding: 24px; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .modal-title { font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
+    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .form-group label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+    .form-group input {
+      padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.8); color: var(--text-main); font-size: 0.9rem; outline: none;
+    }
+    .form-group input:focus { border-color: var(--primary); }
+    .btn-submit {
+      width: 100%; padding: 12px; border-radius: 8px; border: none;
+      background: var(--primary); color: white; font-weight: 600; cursor: pointer; margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -484,9 +432,12 @@
     </header>
 
     <div class="kar-actions">
-      <button class="btn-zip" onclick="document.getElementById('zipInput').click()">
+      <button class="btn-zip" id="btnOpenLocal">
         <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
         Open Lokale .KAR Bestanden
+      </button>
+      <button class="btn-zip" id="btnLoginModal" style="background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.3);">
+        🔐 Inloggen / Beheer
       </button>
       <input type="file" id="zipInput" accept=".kar,.zip,application/x-zip-compressed,application/zip,application/octet-stream" multiple>
     </div>
@@ -502,34 +453,34 @@
 
     <!-- Afspeellijst / Menu -->
     <div class="playlist-section" id="playlistSection">
-      <div class="playlist-header" onclick="togglePlaylistMenu()">
+      <div class="playlist-header" id="playlistHeader">
         <span>📚 Afspeellijst / Menu</span>
         <span class="playlist-count" id="playlistCount">0</span>
       </div>
       <div class="playlist-body" id="playlistBody">
-        <input type="text" class="playlist-search" id="playlistSearch" placeholder="Zoek nummer..." oninput="filterPlaylist()">
-        <ul class="playlist-list" id="playlistList">
-        </ul>
+        <input type="text" class="playlist-search" id="playlistSearch" placeholder="Zoek nummer...">
+        <ul class="playlist-list" id="playlistList"></ul>
       </div>
     </div>
 
+    <!-- Lyrics Container -->
     <div class="lyrics-wrapper" id="lyricsWrapper">
-      <button class="btn-fullscreen" id="fullscreenBtn" onclick="toggleFullscreen()">
+      <button class="btn-fullscreen" id="fullscreenBtn">
         <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
           <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
         </svg>
         <span>Volledig scherm</span>
       </button>
 
-      <button class="btn-close-fullscreen" id="closeFullscreenBtn" onclick="toggleFullscreen()" title="Sluiten">✕</button>
+      <button class="btn-close-fullscreen" id="closeFullscreenBtn" title="Sluiten">✕</button>
 
       <div class="lyrics-container" id="lyricsContainer">
         <div class="lyric-line">Kies een .kar bestand om te starten...</div>
       </div>
 
-      <!-- INKLAPBARE SPELER IN FULLSCREEN -->
+      <!-- Inklapbare speler in Fullscreen -->
       <div class="fs-player-overlay" id="fsPlayerOverlay">
-        <button class="fs-toggle-btn" id="fsToggleBtn" onclick="toggleFsPanel(event)">
+        <button class="fs-toggle-btn" id="fsToggleBtn">
           <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
             <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>
           </svg>
@@ -564,16 +515,17 @@
               <input type="range" id="fsVocalVol" min="0" max="1" step="0.01" value="1">
             </div>
             <div class="presets">
-              <button class="btn-preset mute" id="fsVocalMuteBtn" onclick="setVocalPreset(0)">Mute</button>
-              <button class="btn-preset" onclick="setVocalPreset(0.3)">30%</button>
-              <button class="btn-preset" onclick="setVocalPreset(0.7)">70%</button>
-              <button class="btn-preset active" id="fsPreset100" onclick="setVocalPreset(1.0)">100%</button>
+              <button class="btn-preset mute" id="fsVocalMuteBtn">Mute</button>
+              <button class="btn-preset" id="fsPreset30">30%</button>
+              <button class="btn-preset" id="fsPreset70">70%</button>
+              <button class="btn-preset active" id="fsPreset100">100%</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Offset Besturing -->
     <div class="offset-control">
       <div class="offset-header">
         <span class="offset-title">⏱️ Tekst Vertraging:</span>
@@ -583,16 +535,17 @@
         <input type="range" id="offsetSlider" min="-10" max="10" step="0.1" value="0.0">
       </div>
       <div class="offset-btns">
-        <button class="btn-offset" onclick="adjustOffset(-0.4)">-0.4s</button>
-        <button class="btn-offset" onclick="adjustOffset(-0.2)">-0.2s</button>
-        <button class="btn-offset" onclick="adjustOffset(-0.1)">-0.1s</button>
-        <button class="btn-offset reset" onclick="setOffset(0.0)">0.0s</button>
-        <button class="btn-offset" onclick="adjustOffset(0.1)">+0.1s</button>
-        <button class="btn-offset" onclick="adjustOffset(0.2)">+0.2s</button>
-        <button class="btn-offset" onclick="adjustOffset(0.4)">+0.4s</button>
+        <button class="btn-offset" id="btnOffsetMinus4">-0.4s</button>
+        <button class="btn-offset" id="btnOffsetMinus2">-0.2s</button>
+        <button class="btn-offset" id="btnOffsetMinus1">-0.1s</button>
+        <button class="btn-offset reset" id="btnOffsetReset">0.0s</button>
+        <button class="btn-offset" id="btnOffsetPlus1">+0.1s</button>
+        <button class="btn-offset" id="btnOffsetPlus2">+0.2s</button>
+        <button class="btn-offset" id="btnOffsetPlus4">+0.4s</button>
       </div>
     </div>
 
+    <!-- Hoofd Voortgangsbalk -->
     <div class="progress-section">
       <input type="range" id="seekSlider" min="0" max="100" value="0" disabled>
       <div class="time-display">
@@ -601,6 +554,7 @@
       </div>
     </div>
 
+    <!-- Hoofdbediening -->
     <div class="controls-main">
       <button id="playBtn" class="btn-action btn-play" disabled>
         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -612,6 +566,7 @@
       </button>
     </div>
 
+    <!-- Mixer Sectie -->
     <div class="mixer-section">
       <div class="channel">
         <div class="channel-header">
@@ -622,10 +577,10 @@
           <input type="range" id="vocalVol" min="0" max="1" step="0.01" value="1">
         </div>
         <div class="presets">
-          <button class="btn-preset mute" id="vocalMuteBtn" onclick="setVocalPreset(0)">Mute</button>
-          <button class="btn-preset" onclick="setVocalPreset(0.3)">30%</button>
-          <button class="btn-preset" onclick="setVocalPreset(0.7)">70%</button>
-          <button class="btn-preset active" id="mainPreset100" onclick="setVocalPreset(1.0)">100%</button>
+          <button class="btn-preset mute" id="vocalMuteBtn">Mute</button>
+          <button class="btn-preset" id="mainPreset30">30%</button>
+          <button class="btn-preset" id="mainPreset70">70%</button>
+          <button class="btn-preset active" id="mainPreset100">100%</button>
         </div>
       </div>
 
@@ -643,649 +598,45 @@
     <div class="status-bar" id="statusBar">Bestanden ophalen van NAS...</div>
   </div>
 
-  <script>
-    const APP_SECRET_KEY = "MijnUniekeKaraokeSleutel2026!";
-    const NAS_INDEX_URL = "https://karaokenas.synology.me:8444/karaoke/index.php";
-
-    function scrambleBuffer(arrayBuffer, key) {
-      const uint8 = new Uint8Array(arrayBuffer);
-      const keyLength = key.length;
-      for (let i = 0; i < uint8.length; i++) {
-        uint8[i] ^= key.charCodeAt(i % keyLength);
-      }
-      return uint8.buffer;
-    }
-
-    let audioCtx = null, musicBuffer = null, vocalBuffer = null;
-    let musicSource = null, vocalSource = null, musicGainNode = null, vocalGainNode = null;
-    let isPlaying = false, startTime = 0, pauseOffset = 0, animFrame = null;
-    let lyricsData = [], activeLineIndex = -1;
-    
-    let playlist = [];
-    let currentTrackIndex = -1;
-
-    const savedOffset = localStorage.getItem('karaoke_userOffset');
-    let userOffset = savedOffset !== null ? parseFloat(savedOffset) : 0.0;
-    let isUserSeeking = false;
-
-    const zipInput = document.getElementById('zipInput');
-    const playBtn = document.getElementById('playBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const fsPlayBtn = document.getElementById('fsPlayBtn');
-    const fsStopBtn = document.getElementById('fsStopBtn');
-
-    const musicVol = document.getElementById('musicVol');
-    const vocalVol = document.getElementById('vocalVol');
-    const fsVocalVol = document.getElementById('fsVocalVol');
-    const musicVolVal = document.getElementById('musicVolVal');
-    const vocalVolVal = document.getElementById('vocalVolVal');
-    const fsVocalVolVal = document.getElementById('fsVocalVolVal');
-
-    const statusBar = document.getElementById('statusBar');
-    const seekSlider = document.getElementById('seekSlider');
-    const fsSeekSlider = document.getElementById('fsSeekSlider');
-    const currentTimeEl = document.getElementById('currentTime');
-    const durationTimeEl = document.getElementById('durationTime');
-    const fsCurrentTimeEl = document.getElementById('fsCurrentTime');
-    const fsDurationTimeEl = document.getElementById('fsDurationTime');
-
-    const lyricsContainer = document.getElementById('lyricsContainer');
-    const lyricsWrapper = document.getElementById('lyricsWrapper');
-    const offsetDisplay = document.getElementById('offsetDisplay');
-    const offsetSlider = document.getElementById('offsetSlider');
-
-    const fsPlayerOverlay = document.getElementById('fsPlayerOverlay');
-    const fsToggleBtn = document.getElementById('fsToggleBtn');
-
-    function toggleFsPanel(e) {
-      if (e) e.stopPropagation();
-      fsPlayerOverlay.classList.toggle('collapsed');
-      fsToggleBtn.classList.toggle('collapsed');
-    }
-
-    function togglePlaylistMenu() {
-      const body = document.getElementById('playlistBody');
-      body.classList.toggle('open');
-    }
-
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        musicGainNode = audioCtx.createGain();
-        vocalGainNode = audioCtx.createGain();
-        musicGainNode.connect(audioCtx.destination);
-        vocalGainNode.connect(audioCtx.destination);
-      }
-    }
-
-    async function decodeAudioArrayBuffer(arrayBuffer) {
-      initAudio();
-      return await audioCtx.decodeAudioData(arrayBuffer);
-    }
-
-    function getMaxDuration() {
-      return Math.max(musicBuffer?.duration || 0, vocalBuffer?.duration || 0);
-    }
-
-    function formatTime(sec) {
-      if (isNaN(sec)) return "00:00";
-      const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
-      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-
-    function toggleFullscreen() {
-      if (!document.fullscreenElement && !lyricsWrapper.classList.contains('fullscreen')) {
-        if (lyricsWrapper.requestFullscreen) {
-          lyricsWrapper.requestFullscreen().catch(() => lyricsWrapper.classList.add('fullscreen'));
-        } else {
-          lyricsWrapper.classList.add('fullscreen');
-        }
-      } else {
-        if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen();
-        lyricsWrapper.classList.remove('fullscreen');
-      }
-    }
-
-    document.addEventListener('fullscreenchange', () => {
-      lyricsWrapper.classList.toggle('fullscreen', !!document.fullscreenElement);
-    });
-
-    // NAS-lijst ophalen bij het opstarten
-    async function loadLiedjesVanNAS() {
-      try {
-        statusBar.textContent = "Verbinden met NAS...";
-        const response = await fetch(NAS_INDEX_URL);
-        if (!response.ok) throw new Error(`HTTP Fout: ${response.status}`);
-        
-        const bestanden = await response.json();
-        
-        let toegevoegdCount = 0;
-        bestanden.forEach(item => {
-          // Ondersteun zowel gewone PHP arrays/objects als directe URLs
-          let fileName = "";
-          let fullUrl = "";
-
-          if (typeof item === 'object' && item !== null) {
-            fileName = item.filename || item.name || item.file || "";
-            fullUrl = item.url || (NAS_INDEX_URL + "?file=" + encodeURIComponent(fileName));
-          } else if (typeof item === 'string') {
-            fileName = item;
-            if (fileName.startsWith('http')) {
-              fullUrl = fileName;
-            } else {
-              fullUrl = NAS_INDEX_URL + "?file=" + encodeURIComponent(fileName);
-            }
-          }
-
-          if (fileName && fileName.toLowerCase().endsWith('.kar')) {
-            const cleanTitle = fileName.split('/').pop().replace(/\.kar$/i, '').replace(/_/g, ' ');
-            
-            if (!playlist.some(p => p.url === fullUrl)) {
-              playlist.push({
-                name: fileName.split('/').pop(),
-                title: cleanTitle,
-                url: fullUrl,
-                file: null
-              });
-              toegevoegdCount++;
-            }
-          }
-        });
-
-        updatePlaylistUI();
-        
-        if (playlist.length > 0) {
-          statusBar.textContent = `${playlist.length} nummers geladen van NAS.`;
-          document.getElementById('playlistBody').classList.add('open');
-        } else {
-          statusBar.textContent = "Geen .kar bestanden gevonden op NAS.";
-        }
-      } catch (err) {
-        console.error("NAS ophaalfout:", err);
-        statusBar.textContent = "Fout bij ophalen lijst van NAS (CORS of netwerk).";
-      }
-    }
-
-    async function getArrayBufferFromFileOrUrl(item) {
-      if (item.file) {
-        if (item.file.arrayBuffer) {
-          return await item.file.arrayBuffer();
-        }
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = () => reject(reader.error);
-          reader.readAsArrayBuffer(item.file);
-        });
-      } else if (item.url) {
-        const res = await fetch(item.url);
-        if (!res.ok) throw new Error(`Netwerkfout bij downloaden: ${res.statusText}`);
-        return await res.arrayBuffer();
-      }
-      throw new Error("Geen geldige bron gevonden.");
-    }
-
-    zipInput.addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files);
-      if (files.length === 0) return;
-
-      statusBar.textContent = "Bestanden verwerken...";
-
-      for (const file of files) {
-        const cleanTitle = file.name.replace(/\.(kar|zip)$/i, '').replace(/_/g, ' ');
-        if (!playlist.some(p => p.name === file.name)) {
-          playlist.push({
-            name: file.name,
-            title: cleanTitle,
-            file: file,
-            url: null
-          });
-        }
-      }
-
-      updatePlaylistUI();
-
-      if (currentTrackIndex === -1 && playlist.length > 0) {
-        loadTrackFromPlaylist(0);
-      } else {
-        statusBar.textContent = `${files.length} bestand(en) toegevoegd aan de lijst.`;
-      }
-
-      if (playlist.length > 1) {
-        document.getElementById('playlistBody').classList.add('open');
-      }
-    });
-
-    function updatePlaylistUI() {
-      document.getElementById('playlistCount').textContent = playlist.length;
-      renderPlaylistItems(playlist);
-    }
-
-    function renderPlaylistItems(items) {
-      const listEl = document.getElementById('playlistList');
-      listEl.innerHTML = '';
-
-      items.forEach((item) => {
-        const originalIndex = playlist.indexOf(item);
-        const li = document.createElement('li');
-        li.className = `playlist-item ${originalIndex === currentTrackIndex ? 'active' : ''}`;
-        li.onclick = () => loadTrackFromPlaylist(originalIndex);
-
-        li.innerHTML = `
-          <span class="playlist-item-title">${item.title}</span>
-          ${originalIndex === currentTrackIndex ? '<span>▶</span>' : ''}
-        `;
-        listEl.appendChild(li);
-      });
-    }
-
-    function filterPlaylist() {
-      const query = document.getElementById('playlistSearch').value.toLowerCase();
-      const filtered = playlist.filter(item => item.title.toLowerCase().includes(query));
-      renderPlaylistItems(filtered);
-    }
-
-    async function loadTrackFromPlaylist(index) {
-      if (index < 0 || index >= playlist.length) return;
-
-      stopAudio();
-      currentTrackIndex = index;
-      const track = playlist[index];
-
-      updatePlaylistUI();
-
-      statusBar.textContent = "Nummer ophalen & inladen...";
-      document.getElementById('trackTitle').textContent = track.title;
-      document.getElementById('trackStatus').textContent = "Pakket verwerken...";
-
-      try {
-        const rawBuffer = await getArrayBufferFromFileOrUrl(track);
-        let zipBuffer = scrambleBuffer(rawBuffer.slice(0), APP_SECRET_KEY);
-        let zip = null;
-
-        try {
-          zip = await JSZip.loadAsync(zipBuffer);
-        } catch(err) {
-          try {
-            zip = await JSZip.loadAsync(rawBuffer);
-          } catch(err2) {
-            zip = null;
-          }
-        }
-
-        musicBuffer = null; vocalBuffer = null; lyricsData = [];
-        let extractedCoverUrl = null;
-
-        if (zip) {
-          for (const filename of Object.keys(zip.files)) {
-            const lower = filename.toLowerCase();
-            if (lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.webp')) {
-              const imgData = await zip.files[filename].async('uint8array');
-              const mime = lower.endsWith('.png') ? 'image/png' : 'image/jpeg';
-              extractedCoverUrl = `data:${mime};base64,` + bufferToBase64(imgData);
-              break;
-            }
-          }
-
-          const filenames = Object.keys(zip.files).sort();
-
-          for (const filename of filenames) {
-            const zipEntry = zip.files[filename];
-            if (zipEntry.dir) continue;
-            const lowerName = filename.toLowerCase();
-            if (lowerName.endsWith(".lrc") || lowerName.endsWith(".txt")) {
-              const lrcText = await zipEntry.async('string');
-              parseLRC(lrcText);
-            }
-          }
-
-          for (const filename of filenames) {
-            const zipEntry = zip.files[filename];
-            if (zipEntry.dir) continue;
-
-            const lowerName = filename.toLowerCase();
-            const isAudio = lowerName.endsWith(".mp3") || lowerName.endsWith(".wav") || lowerName.endsWith(".ogg") || lowerName.endsWith(".m4a");
-
-            if (isAudio) {
-              const data = await zipEntry.async('arraybuffer');
-              if (!extractedCoverUrl) extractedCoverUrl = parseID3Cover(new Uint8Array(data));
-
-              if (lowerName.includes("vocal") || lowerName.includes("zang")) {
-                vocalBuffer = await decodeAudioArrayBuffer(data);
-              } 
-              else if (!musicBuffer) {
-                musicBuffer = await decodeAudioArrayBuffer(data);
-              } 
-              else if (!vocalBuffer) {
-                vocalBuffer = await decodeAudioArrayBuffer(data);
-              }
-            }
-          }
-        }
-
-        if (!extractedCoverUrl) {
-          extractedCoverUrl = parseEmbeddedImage(new Uint8Array(rawBuffer));
-        }
-
-        const coverContainer = document.getElementById('coverContainer');
-        if (extractedCoverUrl) {
-          coverContainer.innerHTML = `<img src="${extractedCoverUrl}" alt="Cover">`;
-        } else {
-          coverContainer.textContent = "🎵";
-        }
-
-        checkReady();
-        document.getElementById('trackStatus').textContent = "Nummer geladen";
-        statusBar.textContent = "Klaar om af te spelen!";
-      } catch (err) {
-        console.error("NAS / File Load Error:", err);
-        statusBar.textContent = "Fout bij inladen van KAR-bestand via netwerk/NAS.";
-        document.getElementById('trackStatus').textContent = "Kan bestand niet verwerken";
-      }
-    }
-
-    function parseID3Cover(bytes) {
-      if (bytes.length < 10 || bytes[0] !== 0x49 || bytes[1] !== 0x44 || bytes[2] !== 0x33) return null;
-      let offset = 10;
-      const totalSize = ((bytes[6] & 0x7f) << 21) | ((bytes[7] & 0x7f) << 14) | ((bytes[8] & 0x7f) << 7) | (bytes[9] & 0x7f);
-
-      while (offset < totalSize && offset < bytes.length - 10) {
-        const frameID = String.fromCharCode(bytes[offset], bytes[offset+1], bytes[offset+2], bytes[offset+3]);
-        const frameSize = (bytes[offset+4] << 24) | (bytes[offset+5] << 16) | (bytes[offset+6] << 8) | bytes[offset+7];
-        
-        if (frameID === "APIC") {
-          let imgStart = offset + 10;
-          let mimeEnd = imgStart + 1;
-          while (bytes[mimeEnd] !== 0 && mimeEnd < offset + 10 + frameSize) mimeEnd++;
-          
-          let mime = "image/jpeg";
-          const mimeStr = String.fromCharCode(...bytes.subarray(imgStart + 1, mimeEnd));
-          if (mimeStr.includes("png")) mime = "image/png";
-
-          let pictureDataStart = mimeEnd + 2;
-          while (bytes[pictureDataStart] !== 0 && pictureDataStart < offset + 10 + frameSize) pictureDataStart++;
-          pictureDataStart++;
-
-          const imgBuffer = bytes.subarray(pictureDataStart, offset + 10 + frameSize);
-          return `data:${mime};base64,` + bufferToBase64(imgBuffer);
-        }
-        offset += 10 + frameSize;
-      }
-      return null;
-    }
-
-    function parseEmbeddedImage(bytes) {
-      for (let i = 0; i < bytes.length - 3; i++) {
-        if (bytes[i] === 0xFF && bytes[i+1] === 0xD8 && bytes[i+2] === 0xFF) {
-          let end = -1;
-          for (let j = i + 2; j < bytes.length - 1; j++) {
-            if (bytes[j] === 0xFF && bytes[j+1] === 0xD9) { end = j + 2; break; }
-          }
-          if (end !== -1 && (end - i) > 2000) return 'data:image/jpeg;base64,' + bufferToBase64(bytes.subarray(i, end));
-        }
-      }
-      for (let i = 0; i < bytes.length - 8; i++) {
-        if (bytes[i] === 0x89 && bytes[i+1] === 0x50 && bytes[i+2] === 0x4E && bytes[i+3] === 0x47) {
-          for (let j = i; j < bytes.length - 4; j++) {
-            if (bytes[j] === 0x49 && bytes[j+1] === 0x45 && bytes[j+2] === 0x42 && bytes[j+3] === 0x44) {
-              return 'data:image/png;base64,' + bufferToBase64(bytes.subarray(i, j + 8));
-            }
-          }
-        }
-      }
-      return null;
-    }
-
-    function bufferToBase64(bytes) {
-      let binary = '';
-      const len = bytes.byteLength;
-      for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
-      return window.btoa(binary);
-    }
-
-    function parseLRC(lrcText) {
-      lyricsData = [];
-      const lineTimeRegex = /^\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)$/;
-
-      lrcText.split('\n').forEach(line => {
-        const lineMatch = lineTimeRegex.exec(line.trim());
-        if (lineMatch) {
-          const time = parseInt(lineMatch[1], 10) * 60 + parseInt(lineMatch[2], 10) + parseInt(lineMatch[3].padEnd(3, '0'), 10) / 1000;
-          const cleanText = lineMatch[4].replace(/\[.*?\]/g, '').trim();
-          if (cleanText) lyricsData.push({ time, text: cleanText });
-        }
-      });
-
-      lyricsData.sort((a, b) => a.time - b.time);
-      renderLyrics();
-    }
-
-    function renderLyrics() {
-      lyricsContainer.innerHTML = '';
-      if (lyricsData.length === 0) {
-        lyricsContainer.innerHTML = '<div class="lyric-line">Geen songtekst aanwezig</div>';
-        return;
-      }
-      lyricsData.forEach((line, index) => {
-        const div = document.createElement('div');
-        div.className = 'lyric-line';
-        div.id = `line-${index}`;
-        div.textContent = line.text;
-        div.addEventListener('click', () => seekToTime(line.time - userOffset));
-        lyricsContainer.appendChild(div);
-      });
-    }
-
-    function updateOffsetDisplay() {
-      offsetDisplay.textContent = `${userOffset >= 0 ? '+' : ''}${userOffset.toFixed(1)}s`;
-      offsetSlider.value = userOffset;
-      localStorage.setItem('karaoke_userOffset', userOffset);
-      if (audioCtx) updateLyricsDisplay(isPlaying ? (audioCtx.currentTime - startTime) : pauseOffset);
-    }
-
-    function adjustOffset(delta) { userOffset = parseFloat((userOffset + delta).toFixed(1)); updateOffsetDisplay(); }
-    function setOffset(val) { userOffset = parseFloat(val); updateOffsetDisplay(); }
-    offsetSlider.addEventListener('input', (e) => setOffset(e.target.value));
-
-    function updateLyricsDisplay(currentPos) {
-      if (lyricsData.length === 0) return;
-      const adjustedTime = currentPos - userOffset;
-      let newLineIndex = -1;
-
-      for (let i = 0; i < lyricsData.length; i++) {
-        if (adjustedTime >= lyricsData[i].time) newLineIndex = i;
-        else break;
-      }
-
-      if (newLineIndex !== activeLineIndex) {
-        if (activeLineIndex !== -1) document.getElementById(`line-${activeLineIndex}`)?.classList.remove('active');
-        if (newLineIndex !== -1) {
-          const newEl = document.getElementById(`line-${newLineIndex}`);
-          if (newEl) {
-            newEl.classList.add('active');
-            newEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }
-        activeLineIndex = newLineIndex;
-      }
-    }
-
-    function checkReady() {
-      const duration = getMaxDuration();
-      if (duration > 0) {
-        playBtn.disabled = false; stopBtn.disabled = false; seekSlider.disabled = false;
-        fsPlayBtn.disabled = false; fsStopBtn.disabled = false; fsSeekSlider.disabled = false;
-        
-        const formatted = formatTime(duration);
-        durationTimeEl.textContent = formatted;
-        fsDurationTimeEl.textContent = formatted;
-      }
-    }
-
-    function startAudio(offset = 0) {
-      initAudio();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      stopAudioSources();
-
-      const startTimestamp = audioCtx.currentTime + 0.05;
-
-      if (musicBuffer) {
-        musicSource = audioCtx.createBufferSource();
-        musicSource.buffer = musicBuffer;
-        musicSource.connect(musicGainNode);
-        musicSource.start(startTimestamp, offset);
-      }
-
-      if (vocalBuffer) {
-        vocalSource = audioCtx.createBufferSource();
-        vocalSource.buffer = vocalBuffer;
-        vocalSource.connect(vocalGainNode);
-        vocalSource.start(startTimestamp, offset);
-      }
-
-      startTime = audioCtx.currentTime - offset;
-      isPlaying = true;
-
-      const pauseBtnHtml = `<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> Pauze`;
-      playBtn.innerHTML = pauseBtnHtml;
-      fsPlayBtn.innerHTML = pauseBtnHtml;
-      statusBar.textContent = "Speelt af...";
-      updateProgress();
-    }
-
-    function updateProgress() {
-      if (!isPlaying) return;
-      const currentPos = audioCtx.currentTime - startTime;
-      const totalDur = getMaxDuration();
-
-      if (currentPos >= totalDur) { stopAudio(); return; }
-
-      if (!isUserSeeking) {
-        const val = (currentPos / totalDur) * 100;
-        seekSlider.value = val;
-        fsSeekSlider.value = val;
-        
-        const formattedTime = formatTime(currentPos);
-        currentTimeEl.textContent = formattedTime;
-        fsCurrentTimeEl.textContent = formattedTime;
-
-        updateLyricsDisplay(currentPos);
-      }
-      animFrame = requestAnimationFrame(updateProgress);
-    }
-
-    function togglePlayPause() {
-      if (isPlaying) {
-        pauseOffset = audioCtx.currentTime - startTime;
-        stopAudioSources();
-        isPlaying = false;
-        cancelAnimationFrame(animFrame);
-        
-        const resumeBtnHtml = `<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Hervatten`;
-        playBtn.innerHTML = resumeBtnHtml;
-        fsPlayBtn.innerHTML = resumeBtnHtml;
-        statusBar.textContent = "Gepauzeerd.";
-      } else {
-        startAudio(pauseOffset);
-      }
-    }
-
-    playBtn.addEventListener('click', togglePlayPause);
-    fsPlayBtn.addEventListener('click', togglePlayPause);
-
-    function stopAudioSources() {
-      [musicSource, vocalSource].forEach(src => {
-        if (src) { try { src.stop(); src.disconnect(); } catch(e){} }
-      });
-      musicSource = null; vocalSource = null;
-    }
-
-    function stopAudio() {
-      stopAudioSources();
-      isPlaying = false;
-      pauseOffset = 0;
-      cancelAnimationFrame(animFrame);
-      
-      seekSlider.value = 0; fsSeekSlider.value = 0;
-      currentTimeEl.textContent = "00:00"; fsCurrentTimeEl.textContent = "00:00";
-      
-      const playBtnHtml = `<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Afspelen`;
-      playBtn.innerHTML = playBtnHtml;
-      fsPlayBtn.innerHTML = playBtnHtml;
-      statusBar.textContent = "Gestopt.";
-    }
-
-    stopBtn.addEventListener('click', stopAudio);
-    fsStopBtn.addEventListener('click', stopAudio);
-
-    function seekToTime(targetTime) {
-      pauseOffset = Math.max(0, targetTime);
-      const val = (pauseOffset / getMaxDuration()) * 100;
-      seekSlider.value = val; fsSeekSlider.value = val;
-      
-      const formattedTime = formatTime(pauseOffset);
-      currentTimeEl.textContent = formattedTime;
-      fsCurrentTimeEl.textContent = formattedTime;
-
-      updateLyricsDisplay(pauseOffset);
-      if (isPlaying) startAudio(pauseOffset);
-    }
-
-    function setupSeekEvents(slider) {
-      slider.addEventListener('mousedown', () => { isUserSeeking = true; });
-      slider.addEventListener('touchstart', () => { isUserSeeking = true; });
-
-      slider.addEventListener('input', (e) => {
-        const targetTime = (e.target.value / 100) * getMaxDuration();
-        const formattedTime = formatTime(targetTime);
-        currentTimeEl.textContent = formattedTime;
-        fsCurrentTimeEl.textContent = formattedTime;
-        seekSlider.value = e.target.value;
-        fsSeekSlider.value = e.target.value;
-        updateLyricsDisplay(targetTime);
-      });
-
-      slider.addEventListener('change', (e) => {
-        isUserSeeking = false;
-        pauseOffset = (e.target.value / 100) * getMaxDuration();
-        if (isPlaying) startAudio(pauseOffset);
-      });
-    }
-
-    setupSeekEvents(seekSlider);
-    setupSeekEvents(fsSeekSlider);
-
-    vocalVol.addEventListener('input', (e) => applyVocalVolume(parseFloat(e.target.value)));
-    fsVocalVol.addEventListener('input', (e) => applyVocalVolume(parseFloat(e.target.value)));
-
-    musicVol.addEventListener('input', (e) => {
-      const val = parseFloat(e.target.value);
-      if (musicGainNode) musicGainNode.gain.setValueAtTime(val, audioCtx.currentTime);
-      musicVolVal.textContent = Math.round(val * 100) + '%';
-    });
-
-    function applyVocalVolume(val) {
-      if (vocalGainNode) vocalGainNode.gain.setValueAtTime(val, audioCtx.currentTime);
-      vocalVol.value = val; fsVocalVol.value = val;
-      const text = Math.round(val * 100) + '%';
-      vocalVolVal.textContent = text; fsVocalVolVal.textContent = text;
-
-      document.querySelectorAll('.presets .btn-preset').forEach(btn => btn.classList.remove('active'));
-      if (val === 0) {
-        document.getElementById('vocalMuteBtn')?.classList.add('active');
-        document.getElementById('fsVocalMuteBtn')?.classList.add('active');
-      } else if (val === 1.0) {
-        document.getElementById('mainPreset100')?.classList.add('active');
-        document.getElementById('fsPreset100')?.classList.add('active');
-      }
-    }
-
-    function setVocalPreset(val) { applyVocalVolume(val); }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      updateOffsetDisplay();
-      loadLiedjesVanNAS();
-    });
-  </script>
+  <!-- Modal Auth (Inloggen) -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title">🔐 Inloggen</span>
+        <button class="modal-close" id="btnCloseAuthModal">✕</button>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginUser">Gebruikersnaam</label>
+          <input type="text" id="loginUser" required placeholder="Voer gebruikersnaam in">
+        </div>
+        <div class="form-group">
+          <label for="loginPin">Pincode / Wachtwoord</label>
+          <input type="password" id="loginPin" required placeholder="****">
+        </div>
+        <button type="submit" class="btn-submit">Aanmelden</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Admin Panel -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title">⚙️ Gebruikersbeheer</span>
+        <button class="modal-close" id="btnCloseAdminModal">✕</button>
+      </div>
+      <div id="adminContent">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Beheer hier karaokegebruikers en rechten.</p>
+        <ul id="userList" style="list-style: none; margin-bottom: 12px; font-size: 0.85rem;"></ul>
+        <button class="btn-submit" id="btnAddUser" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color);">+ Nieuwe Gebruiker</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Javascript Modules Inladen -->
+  <script src="auth.js"></script>
+  <script src="admin.js"></script>
+  <script src="player.js"></script>
 </body>
 </html>
