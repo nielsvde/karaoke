@@ -12,6 +12,7 @@ let lyricsData = [], activeLineIndex = -1;
 
 let playlist = [];
 let currentTrackIndex = -1;
+let currentCoverObjectUrl = null; // Voor net opruimen van geheugen
 
 const savedOffset = localStorage.getItem('karaoke_userOffset');
 let userOffset = savedOffset !== null ? parseFloat(savedOffset) : 0.0;
@@ -24,6 +25,11 @@ const playBtn = document.getElementById('playBtn');
 const stopBtn = document.getElementById('stopBtn');
 const fsPlayBtn = document.getElementById('fsPlayBtn');
 const fsStopBtn = document.getElementById('fsStopBtn');
+
+const nextBtn = document.getElementById('nextBtn');
+const prevBtn = document.getElementById('prevBtn');
+const fsNextBtn = document.getElementById('fsNextBtn');
+const fsPrevBtn = document.getElementById('fsPrevBtn');
 
 const musicVol = document.getElementById('musicVol');
 const vocalVol = document.getElementById('vocalVol');
@@ -65,6 +71,9 @@ function initAudio() {
     musicGainNode.connect(audioCtx.destination);
     vocalGainNode.connect(audioCtx.destination);
   }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
 }
 
 async function decodeAudioArrayBuffer(arrayBuffer) {
@@ -77,7 +86,7 @@ function getMaxDuration() {
 }
 
 function formatTime(sec) {
-  if (isNaN(sec)) return "00:00";
+  if (isNaN(sec) || sec < 0) return "00:00";
   const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
@@ -132,7 +141,7 @@ async function loadLiedjesVanNAS() {
     updatePlaylistUI();
     if (playlist.length > 0) {
       statusBar.textContent = `${playlist.length} nummers geladen van NAS.`;
-      document.getElementById('playlistBody').classList.add('open');
+      document.getElementById('playlistBody')?.classList.add('open');
     } else {
       statusBar.textContent = "Geen .kar bestanden gevonden op NAS.";
     }
@@ -160,19 +169,21 @@ async function getArrayBufferFromFileOrUrl(item) {
 }
 
 function updatePlaylistUI() {
-  document.getElementById('playlistCount').textContent = playlist.length;
+  const countEl = document.getElementById('playlistCount');
+  if (countEl) countEl.textContent = playlist.length;
   renderPlaylistItems(playlist);
 }
 
 function renderPlaylistItems(items) {
   const listEl = document.getElementById('playlistList');
+  if (!listEl) return;
   listEl.innerHTML = '';
 
   items.forEach((item) => {
     const originalIndex = playlist.indexOf(item);
     const li = document.createElement('li');
     li.className = `playlist-item ${originalIndex === currentTrackIndex ? 'active' : ''}`;
-    li.onclick = () => loadTrackFromPlaylist(originalIndex);
+    li.onclick = () => loadTrackFromPlaylist(originalIndex, true);
     li.innerHTML = `
       <span class="playlist-item-title">${item.title}</span>
       ${originalIndex === currentTrackIndex ? '<span>▶</span>' : ''}
@@ -187,7 +198,7 @@ function filterPlaylist() {
   renderPlaylistItems(filtered);
 }
 
-async function loadTrackFromPlaylist(index) {
+async function loadTrackFromPlaylist(index, autoStart = false) {
   if (index < 0 || index >= playlist.length) return;
 
   stopAudio();
@@ -198,6 +209,12 @@ async function loadTrackFromPlaylist(index) {
   statusBar.textContent = "Nummer ophalen & inladen...";
   document.getElementById('trackTitle').textContent = track.title;
   document.getElementById('trackStatus').textContent = "Pakket verwerken...";
+
+  // Ruim oude cover op
+  if (currentCoverObjectUrl) {
+    URL.revokeObjectURL(currentCoverObjectUrl);
+    currentCoverObjectUrl = null;
+  }
 
   try {
     const rawBuffer = await getArrayBufferFromFileOrUrl(track);
@@ -258,16 +275,41 @@ async function loadTrackFromPlaylist(index) {
     if (!extractedCoverUrl) extractedCoverUrl = parseEmbeddedImage(new Uint8Array(rawBuffer));
 
     const coverContainer = document.getElementById('coverContainer');
-    coverContainer.innerHTML = extractedCoverUrl ? `<img src="${extractedCoverUrl}" alt="Cover">` : "🎵";
+    if (coverContainer) {
+      coverContainer.innerHTML = extractedCoverUrl ? `<img src="${extractedCoverUrl}" alt="Cover">` : "🎵";
+    }
 
     checkReady();
     document.getElementById('trackStatus').textContent = "Nummer geladen";
     statusBar.textContent = "Klaar om af te spelen!";
+
+    // Update externe hero card indien aanwezig
+    if (typeof window.updateUserHeroCard === "function") {
+      window.updateUserHeroCard(track.title, extractedCoverUrl);
+    }
+
+    if (autoStart) {
+      startAudio(0);
+    }
   } catch (err) {
     console.error("Load Error:", err);
     statusBar.textContent = "Fout bij inladen van KAR-bestand.";
     document.getElementById('trackStatus').textContent = "Kan bestand niet verwerken";
   }
+}
+
+function nextTrack() {
+  if (playlist.length === 0) return;
+  let nextIndex = currentTrackIndex + 1;
+  if (nextIndex >= playlist.length) nextIndex = 0;
+  loadTrackFromPlaylist(nextIndex, isPlaying);
+}
+
+function prevTrack() {
+  if (playlist.length === 0) return;
+  let prevIndex = currentTrackIndex - 1;
+  if (prevIndex < 0) prevIndex = playlist.length - 1;
+  loadTrackFromPlaylist(prevIndex, isPlaying);
 }
 
 function parseID3Cover(bytes) {
@@ -353,8 +395,8 @@ function renderLyrics() {
 }
 
 function updateOffsetDisplay() {
-  offsetDisplay.textContent = `${userOffset >= 0 ? '+' : ''}${userOffset.toFixed(1)}s`;
-  offsetSlider.value = userOffset;
+  if (offsetDisplay) offsetDisplay.textContent = `${userOffset >= 0 ? '+' : ''}${userOffset.toFixed(1)}s`;
+  if (offsetSlider) offsetSlider.value = userOffset;
   localStorage.setItem('karaoke_userOffset', userOffset);
   if (audioCtx) updateLyricsDisplay(isPlaying ? (audioCtx.currentTime - startTime) : pauseOffset);
 }
@@ -398,7 +440,6 @@ function checkReady() {
 
 function startAudio(offset = 0) {
   initAudio();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
   stopAudioSources();
 
   const startTimestamp = audioCtx.currentTime + 0.05;
@@ -432,12 +473,16 @@ function updateProgress() {
   const currentPos = audioCtx.currentTime - startTime;
   const totalDur = getMaxDuration();
 
-  if (currentPos >= totalDur) { stopAudio(); return; }
+  if (currentPos >= totalDur && totalDur > 0) { 
+    stopAudio(); 
+    nextTrack();
+    return; 
+  }
 
   if (!isUserSeeking) {
     const val = (currentPos / totalDur) * 100;
-    seekSlider.value = val;
-    fsSeekSlider.value = val;
+    seekSlider.value = val || 0;
+    fsSeekSlider.value = val || 0;
     
     const formattedTime = formatTime(currentPos);
     currentTimeEl.textContent = formattedTime;
@@ -499,6 +544,7 @@ function seekToTime(targetTime) {
 }
 
 function setupSeekEvents(slider) {
+  if (!slider) return;
   slider.addEventListener('mousedown', () => { isUserSeeking = true; });
   slider.addEventListener('touchstart', () => { isUserSeeking = true; });
 
@@ -520,10 +566,13 @@ function setupSeekEvents(slider) {
 }
 
 function applyVocalVolume(val) {
-  if (vocalGainNode) vocalGainNode.gain.setValueAtTime(val, audioCtx.currentTime);
-  vocalVol.value = val; fsVocalVol.value = val;
+  if (vocalGainNode && audioCtx) vocalGainNode.gain.setValueAtTime(val, audioCtx.currentTime);
+  if (vocalVol) vocalVol.value = val; 
+  if (fsVocalVol) fsVocalVol.value = val;
+  
   const text = Math.round(val * 100) + '%';
-  vocalVolVal.textContent = text; fsVocalVolVal.textContent = text;
+  if (vocalVolVal) vocalVolVal.textContent = text; 
+  if (fsVocalVolVal) fsVocalVolVal.textContent = text;
 
   document.querySelectorAll('.presets .btn-preset').forEach(btn => btn.classList.remove('active'));
   if (val === 0) {
@@ -537,9 +586,9 @@ function applyVocalVolume(val) {
 
 // Event Listeners koppelen
 document.addEventListener('DOMContentLoaded', () => {
-  btnOpenLocal.addEventListener('click', () => zipInput.click());
+  btnOpenLocal?.addEventListener('click', () => zipInput.click());
   
-  zipInput.addEventListener('change', async (e) => {
+  zipInput?.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
     statusBar.textContent = "Bestanden verwerken...";
@@ -555,55 +604,60 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentTrackIndex === -1 && playlist.length > 0) loadTrackFromPlaylist(0);
   });
 
-  document.getElementById('playlistHeader').addEventListener('click', () => {
-    document.getElementById('playlistBody').classList.toggle('open');
+  document.getElementById('playlistHeader')?.addEventListener('click', () => {
+    document.getElementById('playlistBody')?.classList.toggle('open');
   });
 
-  document.getElementById('playlistSearch').addEventListener('input', filterPlaylist);
+  document.getElementById('playlistSearch')?.addEventListener('input', filterPlaylist);
 
-  document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
-  document.getElementById('closeFullscreenBtn').addEventListener('click', toggleFullscreen);
+  document.getElementById('fullscreenBtn')?.addEventListener('click', toggleFullscreen);
+  document.getElementById('closeFullscreenBtn')?.addEventListener('click', toggleFullscreen);
 
-  fsToggleBtn.addEventListener('click', (e) => {
+  fsToggleBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    fsPlayerOverlay.classList.toggle('collapsed');
-    fsToggleBtn.classList.toggle('collapsed');
+    fsPlayerOverlay?.classList.toggle('collapsed');
+    fsToggleBtn?.classList.toggle('collapsed');
   });
 
-  playBtn.addEventListener('click', togglePlayPause);
-  fsPlayBtn.addEventListener('click', togglePlayPause);
-  stopBtn.addEventListener('click', stopAudio);
-  fsStopBtn.addEventListener('click', stopAudio);
+  playBtn?.addEventListener('click', togglePlayPause);
+  fsPlayBtn?.addEventListener('click', togglePlayPause);
+  stopBtn?.addEventListener('click', stopAudio);
+  fsStopBtn?.addEventListener('click', stopAudio);
+
+  nextBtn?.addEventListener('click', nextTrack);
+  prevBtn?.addEventListener('click', prevTrack);
+  fsNextBtn?.addEventListener('click', nextTrack);
+  fsPrevBtn?.addEventListener('click', prevTrack);
 
   setupSeekEvents(seekSlider);
   setupSeekEvents(fsSeekSlider);
 
-  vocalVol.addEventListener('input', (e) => applyVocalVolume(parseFloat(e.target.value)));
-  fsVocalVol.addEventListener('input', (e) => applyVocalVolume(parseFloat(e.target.value)));
+  vocalVol?.addEventListener('input', (e) => applyVocalVolume(parseFloat(e.target.value)));
+  fsVocalVol?.addEventListener('input', (e) => applyVocalVolume(parseFloat(e.target.value)));
 
-  musicVol.addEventListener('input', (e) => {
+  musicVol?.addEventListener('input', (e) => {
     const val = parseFloat(e.target.value);
-    if (musicGainNode) musicGainNode.gain.setValueAtTime(val, audioCtx.currentTime);
-    musicVolVal.textContent = Math.round(val * 100) + '%';
+    if (musicGainNode && audioCtx) musicGainNode.gain.setValueAtTime(val, audioCtx.currentTime);
+    if (musicVolVal) musicVolVal.textContent = Math.round(val * 100) + '%';
   });
 
-  document.getElementById('vocalMuteBtn').addEventListener('click', () => applyVocalVolume(0));
-  document.getElementById('fsVocalMuteBtn').addEventListener('click', () => applyVocalVolume(0));
-  document.getElementById('mainPreset30').addEventListener('click', () => applyVocalVolume(0.3));
-  document.getElementById('fsPreset30').addEventListener('click', () => applyVocalVolume(0.3));
-  document.getElementById('mainPreset70').addEventListener('click', () => applyVocalVolume(0.7));
-  document.getElementById('fsPreset70').addEventListener('click', () => applyVocalVolume(0.7));
-  document.getElementById('mainPreset100').addEventListener('click', () => applyVocalVolume(1.0));
-  document.getElementById('fsPreset100').addEventListener('click', () => applyVocalVolume(1.0));
+  document.getElementById('vocalMuteBtn')?.addEventListener('click', () => applyVocalVolume(0));
+  document.getElementById('fsVocalMuteBtn')?.addEventListener('click', () => applyVocalVolume(0));
+  document.getElementById('mainPreset30')?.addEventListener('click', () => applyVocalVolume(0.3));
+  document.getElementById('fsPreset30')?.addEventListener('click', () => applyVocalVolume(0.3));
+  document.getElementById('mainPreset70')?.addEventListener('click', () => applyVocalVolume(0.7));
+  document.getElementById('fsPreset70')?.addEventListener('click', () => applyVocalVolume(0.7));
+  document.getElementById('mainPreset100')?.addEventListener('click', () => applyVocalVolume(1.0));
+  document.getElementById('fsPreset100')?.addEventListener('click', () => applyVocalVolume(1.0));
 
-  offsetSlider.addEventListener('input', (e) => setOffset(e.target.value));
-  document.getElementById('btnOffsetMinus4').addEventListener('click', () => adjustOffset(-0.4));
-  document.getElementById('btnOffsetMinus2').addEventListener('click', () => adjustOffset(-0.2));
-  document.getElementById('btnOffsetMinus1').addEventListener('click', () => adjustOffset(-0.1));
-  document.getElementById('btnOffsetReset').addEventListener('click', () => setOffset(0.0));
-  document.getElementById('btnOffsetPlus1').addEventListener('click', () => adjustOffset(0.1));
-  document.getElementById('btnOffsetPlus2').addEventListener('click', () => adjustOffset(0.2));
-  document.getElementById('btnOffsetPlus4').addEventListener('click', () => adjustOffset(0.4));
+  offsetSlider?.addEventListener('input', (e) => setOffset(e.target.value));
+  document.getElementById('btnOffsetMinus4')?.addEventListener('click', () => adjustOffset(-0.4));
+  document.getElementById('btnOffsetMinus2')?.addEventListener('click', () => adjustOffset(-0.2));
+  document.getElementById('btnOffsetMinus1')?.addEventListener('click', () => adjustOffset(-0.1));
+  document.getElementById('btnOffsetReset')?.addEventListener('click', () => setOffset(0.0));
+  document.getElementById('btnOffsetPlus1')?.addEventListener('click', () => adjustOffset(0.1));
+  document.getElementById('btnOffsetPlus2')?.addEventListener('click', () => adjustOffset(0.2));
+  document.getElementById('btnOffsetPlus4')?.addEventListener('click', () => adjustOffset(0.4));
 
   updateOffsetDisplay();
   loadLiedjesVanNAS();
