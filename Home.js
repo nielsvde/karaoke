@@ -82,6 +82,15 @@ document.addEventListener("DOMContentLoaded", () => {
           window.loadTrackFromPlaylist(index);
         }
       });
+
+      // Standaard een willekeurig nummer laden als de afspeellijst gevuld is
+      if (window.playlist.length > 0) {
+        const randomIndex = Math.floor(Math.random() * window.playlist.length);
+        if (typeof window.loadTrackFromPlaylist === 'function') {
+          window.loadTrackFromPlaylist(randomIndex, false);
+        }
+      }
+
     } catch (err) {
       console.error("NAS ophaalfout:", err);
     }
