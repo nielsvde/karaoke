@@ -125,6 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function applyRoleUI(role) {
+    const mainContainer = document.querySelector(".container") || document.body;
+
     if (role === "admin") {
       if (userStartView) userStartView.style.display = "none";
       if (adminControlsView) adminControlsView.style.display = "block";
@@ -140,13 +142,18 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btnLoginModal) btnLoginModal.style.display = "none";
     }
 
+    // Uitlogknop netjes onder de speler/container plaatsen
     if (btnLogout) {
       btnLogout.style.display = "flex";
-      btnLogout.style.position = "fixed";
-      btnLogout.style.bottom = "15px";
-      btnLogout.style.left = "50%";
-      btnLogout.style.transform = "translateX(-50%)";
-      btnLogout.style.zIndex = "99";
+      btnLogout.style.position = "relative";
+      btnLogout.style.margin = "20px auto";
+      btnLogout.style.left = "auto";
+      btnLogout.style.transform = "none";
+      btnLogout.style.zIndex = "10";
+
+      if (btnLogout.parentElement !== mainContainer) {
+        mainContainer.appendChild(btnLogout);
+      }
     }
   }
 
