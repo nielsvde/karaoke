@@ -265,6 +265,11 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
   if (playBtn) playBtn.disabled = true;
   if (fsPlayBtn) fsPlayBtn.disabled = true;
 
+  // Zet de startknop in Home.js op inactief tijdens het laden
+  if (typeof window.setStartButtonState === "function") {
+    window.setStartButtonState(false, "Nummer inladen...");
+  }
+
   currentTrackIndex = index;
   const track = playlist[index];
 
@@ -360,6 +365,11 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
       window.updateUserHeroCard(track.title, extractedCoverUrl);
     }
 
+    // Wanneer alles succesvol is geladen:
+    if (typeof window.setStartButtonState === "function") {
+      window.setStartButtonState(true, "Klaar om af te spelen!");
+    }
+
     if (autoStart) {
       startAudio(0);
     }
@@ -368,6 +378,11 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
     isTrackLoading = false;
     if (statusBar) statusBar.textContent = "Fout bij inladen van KAR-bestand.";
     if (trackStatusEl) trackStatusEl.textContent = "Kan bestand niet verwerken";
+
+    // In geval van een fout tijdens het laden:
+    if (typeof window.setStartButtonState === "function") {
+      window.setStartButtonState(false, "Fout bij inladen van het nummer");
+    }
   }
 }
 
