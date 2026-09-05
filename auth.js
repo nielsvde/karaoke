@@ -1,66 +1,36 @@
-/**
- * auth.js - Authenticatie & Sessiebeheer
- */
+// auth.js
+const NAS_API_URL = "https://karaokenas.synology.me:8444/karaoke/api.php";
 
-let currentUser = null;
-
-const btnLoginModal = document.getElementById('btnLoginModal');
-const authModal = document.getElementById('authModal');
-const btnCloseAuthModal = document.getElementById('btnCloseAuthModal');
-const loginForm = document.getElementById('loginForm');
-
-function openAuthModal() {
-  if (currentUser) {
-    if (currentUser.role === 'admin') {
-      window.AdminModule?.openAdminModal();
-    } else {
-      alert(`Ingelogd als: ${currentUser.username}`);
-    }
-  } else {
-    authModal.classList.add('open');
-  }
-}
-
-function closeAuthModal() {
-  authModal.classList.remove('open');
-}
-
-async function handleLogin(e) {
-  e.preventDefault();
-  const username = document.getElementById('loginUser').value;
-  const pin = document.getElementById('loginPin').value;
-
+async function loginAdmin(username, password) {
   try {
-    const response = await fetch(`${NAS_INDEX_URL}?action=login`, {
+    const response = await fetch(`${NAS_API_URL}?action=login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, pin })
+      body: JSON.stringify({ username, password })
     });
 
-    const result = await response.json();
+    const data = await response.json();
 
-    if (result.success) {
-      currentUser = result.user;
-      closeAuthModal();
-      btnLoginModal.textContent = `👤 ${currentUser.username}`;
-      if (currentUser.role === 'admin') {
-        window.AdminModule?.openAdminModal();
-      }
+    if (data.success) {
+      // Sla het token op in de browser-geheugen
+      localStorage.setItem('karaoke_admin_token', data.token);
+      alert('Succesvol ingelogd als admin!');
+      window.location.reload(); // Of stuur door naar je beheerderspagina
     } else {
-      alert("Inloggen mislukt: " + (result.message || "Onjuiste gegevens."));
+      alert('Inloggen mislukt: ' + data.message);
     }
-  } catch (err) {
-    console.error("Auth Fout:", err);
-    alert("Netwerkfout bij inloggen.");
+  } catch (error) {
+    console.error('Fout bij verbinden met Synology NAS:', error);
+    alert('Kan geen verbinding maken met de NAS.');
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  btnLoginModal.addEventListener('click', openAuthModal);
-  btnCloseAuthModal.addEventListener('click', closeAuthModal);
-  loginForm.addEventListener('submit', handleLogin);
-});
+function logoutAdmin() {
+  localStorage.removeItem('karaoke_admin_token');
+  alert('Uitgelogd.');
+  window.location.reload();
+}
 
-window.AuthModule = {
-  getCurrentUser: () => currentUser
-};
+function isAdminLoggedIn() {
+  return localStorage.getItem('karaoke_admin_token') !== null;
+}
