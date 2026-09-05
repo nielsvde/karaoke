@@ -1,6 +1,6 @@
 /**
  * Home.js - Beheert de authenticatie, rollenweergave, gebruikersinterface 
- * en synchronisatie van de muziekbibliotheek.
+ * en synchronisatie van de NAS-afspeellijst (via index.php).
  */
 document.addEventListener("DOMContentLoaded", () => {
   // DOM Elementen
@@ -31,6 +31,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const userLibCount = document.getElementById("userLibCount");
 
   const EXPIRATION_TIME_MS = 24 * 60 * 60 * 1000;
+  const NAS_INDEX_URL = "https://karaokenas.synology.me:8444/karaoke/index.php";
+  const NAS_LOGIN_URL = "https://karaokenas.synology.me:8444/karaoke/api.php";
+
+  // Zorg dat de globale playlist bestaat
+  if (!window.playlist) window.playlist = [];
 
   // Onthouden gebruikersnaam inladen
   const savedUsername = localStorage.getItem("karaoke_saved_username");
@@ -38,19 +43,80 @@ document.addEventListener("DOMContentLoaded", () => {
     loginUser.value = savedUsername;
   }
 
-  // Uitloggen
+  // --- 1. AFSPEELLIJST OPHALEN VAN DE NAS (ZOALS IN PLAYER.JS) ---
+  async function loadLiedjesVanNAS() {
+    try {
+      if (statusBar) statusBar.textContent = "Verbinden met NAS...";
+      
+      const response = await fetch(NAS_INDEX_URL);
+      if (!response.ok) throw new Error(`HTTP Fout: ${response.status}`);
+
+      const bestanden = await response.json();
+      let toegevoegdCount = 0;
+
+      bestanden.forEach(item => {
+        let fileName = "";
+        let fullUrl = "";
+
+        if (typeof item === 'object' && item !== null) {
+          fileName = item.filename || item.name || item.file || "";
+          fullUrl = item.url || (NAS_INDEX_URL + "?file=" + encodeURIComponent(fileName));
+        } else if (typeof item === 'string') {
+          fileName = item;
+          fullUrl = fileName.startsWith('http') ? fileName : (NAS_INDEX_URL + "?file=" + encodeURIComponent(fileName));
+        }
+
+        if (fileName && fileName.toLowerCase().endsWith('.kar')) {
+          const cleanTitle = fileName.split('/').pop().replace(/\.kar$/i, '').replace(/_/g, ' ');
+          if (!window.playlist.some(p => p.url === fullUrl)) {
+            window.playlist.push({
+              name: fileName.split('/').pop(),
+              title: cleanTitle,
+              url: fullUrl,
+              file: null
+            });
+            toegevoegdCount++;
+          }
+        }
+      });
+
+      // Update de UI van Home.js en eventueel de player list
+      if (typeof window.updatePlaylistUI === 'function') {
+        window.updatePlaylistUI();
+      }
+
+      window.renderUserLibrary(window.playlist, (index) => {
+        if (typeof window.loadTrackFromPlaylist === 'function') {
+          window.loadTrackFromPlaylist(index);
+        }
+      });
+
+      if (window.playlist.length > 0) {
+        if (statusBar) statusBar.textContent = `${window.playlist.length} nummers geladen van NAS.`;
+      } else {
+        if (statusBar) statusBar.textContent = "Geen .kar bestanden gevonden op NAS.";
+      }
+    } catch (err) {
+      console.error("NAS ophaalfout:", err);
+      if (statusBar) statusBar.textContent = "Fout bij ophalen lijst van NAS (CORS of netwerk).";
+    }
+  }
+
+  // Exporteer functie zodat player.js of knoppen deze ook direct kunnen aanroepen
+  window.loadLiedjesVanNAS = loadLiedjesVanNAS;
+
+  // --- 2. AUTHENTICATIE EN SESSIE BEHEER ---
   function logoutSession() {
     localStorage.removeItem("karaoke_admin_token");
     localStorage.removeItem("karaoke_role");
     localStorage.removeItem("karaoke_login_time");
-    
+
     if (authModal) authModal.classList.remove("hidden");
     if (btnLoginModal) btnLoginModal.textContent = "🔐 Inloggen";
     if (btnLogout) btnLogout.style.display = "none";
     if (statusBar) statusBar.textContent = "Log in om te beginnen...";
   }
 
-  // Rollenweergave toepassen (Admin vs Gebruiker)
   function applyRoleUI(role) {
     if (role === "admin") {
       if (userStartView) userStartView.style.display = "none";
@@ -58,7 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (advancedMixerSection) advancedMixerSection.style.display = "block";
       if (btnLoginModal) btnLoginModal.textContent = "⚙️ Gebruikersbeheer";
     } else {
-      // Gebruiker met startscherm en bibliotheek
       if (userStartView) userStartView.style.display = "block";
       if (adminControlsView) adminControlsView.style.display = "none";
       if (advancedMixerSection) advancedMixerSection.style.display = "none";
@@ -66,7 +131,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Authenticatie status controleren
   function checkAuthStatus() {
     const token = localStorage.getItem("karaoke_admin_token");
     const role = localStorage.getItem("karaoke_role");
@@ -77,6 +141,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (authModal) authModal.classList.add("hidden");
       if (btnLogout) btnLogout.style.display = "flex";
       applyRoleUI(role);
+
+      // Laad de afspeellijst zodra de gebruiker is ingelogd
+      loadLiedjesVanNAS();
     } else {
       logoutSession();
     }
@@ -84,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   checkAuthStatus();
 
-  // Event Listeners voor knoppen
+  // --- 3. EVENT LISTENERS ---
   if (btnLogout) {
     btnLogout.addEventListener("click", logoutSession);
   }
@@ -110,19 +177,16 @@ document.addEventListener("DOMContentLoaded", () => {
     btnCloseAdminModal.addEventListener("click", () => closeModal(adminModal));
   }
 
-  // Event voor Start-knop op de Gebruikers Hero Card
   if (userStartBtn) {
     userStartBtn.addEventListener("click", () => {
       const playBtn = document.getElementById("playBtn");
       if (playBtn) playBtn.click();
-      
-      // Schakel automatisch over naar Volledig Scherm
+
       const fullscreenBtn = document.getElementById("fullscreenBtn");
       if (fullscreenBtn) fullscreenBtn.click();
     });
   }
 
-  // Zoekfunctionaliteit voor de Gebruikers Bibliotheek
   if (userSearchInput) {
     userSearchInput.addEventListener("input", (e) => {
       const query = e.target.value.toLowerCase();
@@ -134,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Formulier voor inloggen
+  // INLOGFORMULIER SUBMIT
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -146,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (statusBar) statusBar.textContent = "Verbinden met NAS...";
 
       try {
-        const response = await fetch("https://karaokenas.synology.me:8444/karaoke/api.php?action=login", {
+        const response = await fetch(`${NAS_LOGIN_URL}?action=login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username: user, password: pass })
@@ -156,14 +220,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (data.success) {
           const userRole = data.role || (user.toLowerCase() === 'admin' ? 'admin' : 'user');
-          
+
           localStorage.setItem("karaoke_admin_token", data.token);
           localStorage.setItem("karaoke_role", userRole);
           localStorage.setItem("karaoke_login_time", Date.now().toString());
           localStorage.setItem("karaoke_saved_username", user);
 
           if (authModal) authModal.classList.add("hidden");
-          if (loginPin) loginPin.value = ""; 
+          if (loginPin) loginPin.value = "";
 
           checkAuthStatus();
         } else {
@@ -178,14 +242,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- GLOBALE EXPORT FUNCTIES (Aangeroepen vanuit player.js) ---
-
-  // Synchroniseer geselecteerde nummer naar de Hero Card bovenaan
+  // --- 4. GLOBALE WEERGAVE-FUNCTIES ---
   window.updateUserHeroCard = function(title, coverSrc) {
     if (userHeroTitle) userHeroTitle.textContent = title || "Onbekend nummer";
     if (userHeroStatus) userHeroStatus.textContent = "Klaar om af te spelen!";
     if (userStartBtn) userStartBtn.disabled = false;
-    
+
     if (userHeroCover) {
       if (coverSrc) {
         userHeroCover.innerHTML = `<img src="${coverSrc}" alt="Cover">`;
@@ -195,14 +257,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Synchroniseer Afspeellijst naar Gebruikers Bibliotheek
   window.renderUserLibrary = function(items, onSelectCallback) {
     if (!userLibraryList) return;
     userLibraryList.innerHTML = "";
     if (userLibCount) userLibCount.textContent = `${items.length} nummers`;
 
     if (!items || items.length === 0) {
-      userLibraryList.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 20px;">Geen nummers gevonden.</div>`;
+      userLibraryList.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 20px;">Geen nummers gevonden op de NAS.</div>`;
       return;
     }
 
@@ -211,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
       el.className = "user-library-item";
       el.innerHTML = `
         <div class="user-item-thumb">${item.cover ? `<img src="${item.cover}">` : '🎵'}</div>
-        <div class="user-item-name">${item.title}</div>
+        <div class="user-item-name">${item.title || item.name || 'Onbekend nummer'}</div>
       `;
 
       el.addEventListener("click", () => {
