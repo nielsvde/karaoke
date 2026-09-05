@@ -3,16 +3,17 @@
  * en synchronisatie van de NAS-afspeellijst.
  */
 
-// Visueel verbergen van de ongewenste elementen (lokale knop, lyrics onderaan, statusbalk)
+// Visueel verbergen van de ongewenste elementen (lokale knop, statusbalk en lyrics buiten fullscreen)
 const hideStyle = document.createElement("style");
 hideStyle.textContent = `
   #btnOpenLocal,
   .btn-open-local,
   #statusBar,
   .status-bar,
-  #lyricsContainer,
-  .lyrics-container,
-  #lyricsWrapper:not(.fullscreen) {
+  /* Verberg lyrics-elementen alleen wanneer NIET in fullscreen modus */
+  #lyricsWrapper:not(.fullscreen),
+  body:not(:has(:fullscreen)) #lyricsContainer,
+  body:not(:has(:fullscreen)) .lyrics-container {
     display: none !important;
   }
 `;
@@ -142,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btnLoginModal) btnLoginModal.style.display = "none";
     }
 
-    // Uitlogknop netjes onder de speler/container plaatsen
+    // Uitlogknop onder de speler/container plaatsen
     if (btnLogout) {
       btnLogout.style.display = "flex";
       btnLogout.style.position = "relative";
