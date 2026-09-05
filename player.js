@@ -8,7 +8,7 @@ const NAS_INDEX_URL = "https://karaokenas.synology.me:8444/karaoke/index.php";
 let audioCtx = null, musicBuffer = null, vocalBuffer = null;
 let musicSource = null, vocalSource = null, musicGainNode = null, vocalGainNode = null;
 let isPlaying = false, startTime = 0, pauseOffset = 0, animFrame = null;
-let isTrackLoading = false; // <-- NIEUW: Voorkomt starten zolang sporen nog decoderen
+let isTrackLoading = false;
 let lyricsData = [], activeLineIndex = -1;
 
 let playlist = [];
@@ -205,7 +205,6 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
 
   stopAudio();
   
-  // <-- NIEUW: Zet laadstatus op true en deactiveer de afspeelknoppen
   isTrackLoading = true;
   if (playBtn) playBtn.disabled = true;
   if (fsPlayBtn) fsPlayBtn.disabled = true;
@@ -290,7 +289,6 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
       coverContainer.innerHTML = extractedCoverUrl ? `<img src="${extractedCoverUrl}" alt="Cover">` : "🎵";
     }
 
-    // <-- NIEUW: Laden is afgerond, geef de knoppen vrij
     isTrackLoading = false;
     checkReady();
     if (trackStatusEl) trackStatusEl.textContent = "Nummer geladen";
@@ -305,7 +303,7 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
     }
   } catch (err) {
     console.error("Load Error:", err);
-    isTrackLoading = false; // <-- NIEUW: Bij fouten vlag resetten
+    isTrackLoading = false;
     if (statusBar) statusBar.textContent = "Fout bij inladen van KAR-bestand.";
     if (trackStatusEl) trackStatusEl.textContent = "Kan bestand niet verwerken";
   }
@@ -394,6 +392,8 @@ function parseLRC(lrcText) {
 function renderLyrics() {
   if (!lyricsContainer) return;
   lyricsContainer.innerHTML = '';
+  activeLineIndex = -1;
+
   if (lyricsData.length === 0) {
     lyricsContainer.innerHTML = '<div class="lyric-line">Geen songtekst aanwezig</div>';
     return;
@@ -406,6 +406,7 @@ function renderLyrics() {
     div.addEventListener('click', () => seekToTime(line.time - userOffset));
     lyricsContainer.appendChild(div);
   });
+  updateLyricsDisplay(0);
 }
 
 function updateOffsetDisplay() {
@@ -443,7 +444,7 @@ function updateLyricsDisplay(currentPos) {
 
 function checkReady() {
   const duration = getMaxDuration();
-  if (duration > 0 && !isTrackLoading) { // <-- NIEUW: Alleen activeren als het laden klaar is
+  if (duration > 0 && !isTrackLoading) {
     if (playBtn) playBtn.disabled = false; 
     if (stopBtn) stopBtn.disabled = false; 
     if (seekSlider) seekSlider.disabled = false;
@@ -458,7 +459,7 @@ function checkReady() {
 }
 
 function startAudio(offset = 0) {
-  if (isTrackLoading) { // <-- NIEUW: Voorkom starten zolang sporen decoderen
+  if (isTrackLoading) {
     if (statusBar) statusBar.textContent = "Even geduld, sporen worden nog geladen...";
     return;
   }
@@ -518,7 +519,7 @@ function updateProgress() {
 }
 
 function togglePlayPause() {
-  if (isTrackLoading) { // <-- NIEUW: Blokkeer pauze/afspelen knop gedurende het laden
+  if (isTrackLoading) {
     if (statusBar) statusBar.textContent = "Even geduld, sporen worden nog geladen...";
     return;
   }
@@ -629,6 +630,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (files.length === 0) return;
     if (statusBar) statusBar.textContent = "Bestanden verwerken...";
 
+    const startIndex = playlist.length;
+
     for (const file of files) {
       const cleanTitle = file.name.replace(/\.(kar|zip)$/i, '').replace(/_/g, ' ');
       if (!playlist.some(p => p.name === file.name)) {
@@ -637,7 +640,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updatePlaylistUI();
-    if (currentTrackIndex === -1 && playlist.length > 0) loadTrackFromPlaylist(0, false);
+    if (playlist.length > 0) {
+      // Laad het laatst geïmporteerde nummer in zonder direct af te spelen
+      loadTrackFromPlaylist(startIndex < playlist.length ? startIndex : 0, false);
+    }
+    // Reset file input zodat hetzelfde bestand opnieuw gekozen kan worden indien nodig
+    zipInput.value = '';
   });
 
   document.getElementById('playlistHeader')?.addEventListener('click', () => {
