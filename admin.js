@@ -7,7 +7,6 @@ const btnCloseAdminModal = document.getElementById('btnCloseAdminModal');
 const userList = document.getElementById('userList');
 const btnAddUser = document.getElementById('btnAddUser');
 
-// Zorg ervoor dat NAS_INDEX_URL een geldige fallback heeft als deze nog niet globaal is gedefinieerd
 const API_BASE_URL = typeof NAS_INDEX_URL !== 'undefined' 
   ? NAS_INDEX_URL 
   : "https://karaokenas.synology.me:8444/karaoke/api.php";
@@ -26,7 +25,7 @@ function closeAdminModal() {
   adminModal.classList.remove('open');
 }
 
-// 1. GEBRUIKERS OPHALEN
+// 1. GEBRUIKERS OPHALEN & TONEN
 async function loadUsers() {
   if (!userList) return;
   userList.innerHTML = "<li style='padding:8px 0; color:var(--text-muted);'>Laden...</li>";
@@ -46,12 +45,54 @@ async function loadUsers() {
         li.style.padding = "8px 0";
         li.style.borderBottom = "1px solid rgba(255,255,255,0.08)";
 
+        // Gebruikersnaam
         const infoSpan = document.createElement('span');
-        infoSpan.textContent = `👤 ${u.username} (${u.role})`;
+        infoSpan.textContent = `👤 ${u.username}`;
+        infoSpan.style.fontWeight = "bold";
         
-        li.appendChild(infoSpan);
+        // Actiecontainer
+        const actionsDiv = document.createElement('div');
+        actionsDiv.style.display = "flex";
+        actionsDiv.style.gap = "8px";
+        actionsDiv.style.alignItems = "center";
 
-        // Verwijderknop toevoegen (behalve voor de hoofd-admin)
+        // Rol Dropdown
+        const roleSelect = document.createElement('select');
+        roleSelect.style.background = "#2a2a3c";
+        roleSelect.style.color = "#fff";
+        roleSelect.style.border = "1px solid #444";
+        roleSelect.style.borderRadius = "4px";
+        roleSelect.style.padding = "2px 4px";
+
+        ['user', 'admin'].forEach(roleOption => {
+          const opt = document.createElement('option');
+          opt.value = roleOption;
+          opt.textContent = roleOption === 'admin' ? 'Admin' : 'Gebruiker';
+          if (u.role === roleOption) opt.selected = true;
+          roleSelect.appendChild(opt);
+        });
+
+        // Blokkeer het wijzigen van de hoofdadmin rol
+        if (u.username === 'admin') {
+          roleSelect.disabled = true;
+        } else {
+          roleSelect.addEventListener('change', (e) => changeUserRole(u.username, e.target.value));
+        }
+
+        // Wachtwoord Wijzigen Knop (🔑)
+        const passBtn = document.createElement('button');
+        passBtn.textContent = '🔑';
+        passBtn.title = 'Wachtwoord wijzigen';
+        passBtn.style.background = 'none';
+        passBtn.style.border = 'none';
+        passBtn.style.cursor = 'pointer';
+        passBtn.style.fontSize = '1rem';
+        passBtn.addEventListener('click', () => changeUserPassword(u.username));
+
+        actionsDiv.appendChild(roleSelect);
+        actionsDiv.appendChild(passBtn);
+
+        // Verwijderknop (🗑️)
         if (u.username !== 'admin') {
           const deleteBtn = document.createElement('button');
           deleteBtn.textContent = '🗑️';
@@ -60,12 +101,12 @@ async function loadUsers() {
           deleteBtn.style.border = 'none';
           deleteBtn.style.cursor = 'pointer';
           deleteBtn.style.fontSize = '1rem';
-          deleteBtn.style.padding = '2px 6px';
-
           deleteBtn.addEventListener('click', () => deleteUser(u.username));
-          li.appendChild(deleteBtn);
+          actionsDiv.appendChild(deleteBtn);
         }
 
+        li.appendChild(infoSpan);
+        li.appendChild(actionsDiv);
         userList.appendChild(li);
       });
     } else {
@@ -103,7 +144,7 @@ async function addNewUser() {
 
     if (data.success) {
       alert("Gebruiker succesvol aangemaakt!");
-      loadUsers(); // Ververs de lijst direct
+      loadUsers();
     } else {
       alert("Fout bij aanmaken: " + (data.message || "Onbekende fout"));
     }
@@ -113,7 +154,62 @@ async function addNewUser() {
   }
 }
 
-// 3. GEBRUIKER VERWIJDEREN
+// 3. WACHTWOORD WIJZIGEN
+async function changeUserPassword(username) {
+  const newPassword = prompt(`Voer een nieuw wachtwoord in voor gebruiker '${username}':`);
+  if (!newPassword) return;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}?action=change_password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: username,
+        newPassword: newPassword
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      alert(`Wachtwoord voor '${username}' is gewijzigd!`);
+    } else {
+      alert("Fout bij wijzigen: " + (data.message || "Onbekende fout"));
+    }
+  } catch (err) {
+    console.error("Fout bij wijzigen wachtwoord:", err);
+    alert("Kan geen verbinding maken met de NAS.");
+  }
+}
+
+// 4. ROL WIJZIGEN
+async function changeUserRole(username, newRole) {
+  try {
+    const response = await fetch(`${API_BASE_URL}?action=change_role`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: username,
+        role: newRole
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      console.log(`Rol van ${username} gewijzigd naar ${newRole}`);
+    } else {
+      alert("Fout bij aanpassen rol: " + (data.message || "Onbekende fout"));
+      loadUsers(); // Reset de dropdown
+    }
+  } catch (err) {
+    console.error("Fout bij aanpassen rol:", err);
+    alert("Kan geen verbinding maken met de NAS.");
+    loadUsers();
+  }
+}
+
+// 5. GEBRUIKER VERWIJDEREN
 async function deleteUser(username) {
   if (!confirm(`Weet je zeker dat je gebruiker '${username}' wilt verwijderen?`)) {
     return;
@@ -129,7 +225,7 @@ async function deleteUser(username) {
     const data = await response.json();
 
     if (data.success) {
-      loadUsers(); // Ververs de lijst
+      loadUsers();
     } else {
       alert("Fout bij verwijderen: " + (data.message || "Onbekende fout"));
     }
@@ -154,5 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.AdminModule = {
   openAdminModal,
   closeAdminModal,
-  loadUsers
+  loadUsers,
+  changeUserPassword
 };
