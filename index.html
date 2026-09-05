@@ -15,6 +15,7 @@
       --bg-main: #0f172a;
       --card-bg: rgba(30, 41, 59, 0.7);
       --primary: #6366f1;
+      --primary-hover: #4f46e5;
       --accent-vocal: #ec4899;
       --accent-music: #06b6d4;
       --accent-lrc: #a855f7;
@@ -347,9 +348,9 @@
     .offset-header { display: flex; justify-content: space-between; align-items: center; }
     .offset-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
     .offset-value { font-size: 0.9rem; font-weight: 700; color: var(--accent-lrc); font-family: monospace; }
-    .offset-btns { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .offset-btns { display: flex; align-items: center; justify-content: space-between; gap: 4px; flex-wrap: wrap; }
     .btn-offset {
-      flex: 1; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border-color);
+      flex: 1; min-width: 40px; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border-color);
       color: var(--text-main); padding: 6px 0; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
       cursor: pointer; text-align: center;
     }
@@ -368,6 +369,7 @@
       display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-play { background: var(--primary); color: white; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4); }
+    .btn-play:hover:not(:disabled) { background: var(--primary-hover); }
     .btn-play:disabled { background: rgba(255, 255, 255, 0.1); color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
     .btn-stop { background: rgba(255, 255, 255, 0.08); color: var(--text-main); border: 1px solid var(--border-color); }
     .btn-stop:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -381,10 +383,14 @@
 
     .slider-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 10px; }
     .fs-card-inner .slider-wrapper { margin-bottom: 6px; }
-    input[type="range"] { -webkit-appearance: none; width: 100%; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.15); outline: none; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.15); outline: none; }
     input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #ffffff;
+      -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #ffffff;
       box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 22px; height: 22px; border-radius: 50%; background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; border: none;
     }
 
     .presets { display: flex; gap: 8px; }
@@ -410,7 +416,7 @@
     }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .modal-title { font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
-    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 4px; }
     .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
     .form-group label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
     .form-group input {
@@ -432,11 +438,11 @@
     </header>
 
     <div class="kar-actions">
-      <button class="btn-zip" id="btnOpenLocal">
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+      <button type="button" class="btn-zip" id="btnOpenLocal">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
         Open Lokale .KAR Bestanden
       </button>
-      <button class="btn-zip" id="btnLoginModal" style="background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.3);">
+      <button type="button" class="btn-zip" id="btnLoginModal" style="background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.3);">
         🔐 Inloggen / Beheer
       </button>
       <input type="file" id="zipInput" accept=".kar,.zip,application/x-zip-compressed,application/zip,application/octet-stream" multiple>
@@ -458,21 +464,21 @@
         <span class="playlist-count" id="playlistCount">0</span>
       </div>
       <div class="playlist-body" id="playlistBody">
-        <input type="text" class="playlist-search" id="playlistSearch" placeholder="Zoek nummer...">
+        <input type="text" class="playlist-search" id="playlistSearch" placeholder="Zoek nummer..." aria-label="Zoek nummer in afspeellijst">
         <ul class="playlist-list" id="playlistList"></ul>
       </div>
     </div>
 
     <!-- Lyrics Container -->
     <div class="lyrics-wrapper" id="lyricsWrapper">
-      <button class="btn-fullscreen" id="fullscreenBtn">
-        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+      <button type="button" class="btn-fullscreen" id="fullscreenBtn" aria-label="Volledig scherm openen">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
         </svg>
         <span>Volledig scherm</span>
       </button>
 
-      <button class="btn-close-fullscreen" id="closeFullscreenBtn" title="Sluiten">✕</button>
+      <button type="button" class="btn-close-fullscreen" id="closeFullscreenBtn" title="Sluiten" aria-label="Volledig scherm sluiten">✕</button>
 
       <div class="lyrics-container" id="lyricsContainer">
         <div class="lyric-line">Kies een .kar bestand om te starten...</div>
@@ -480,15 +486,15 @@
 
       <!-- Inklapbare speler in Fullscreen -->
       <div class="fs-player-overlay" id="fsPlayerOverlay">
-        <button class="fs-toggle-btn" id="fsToggleBtn">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+        <button type="button" class="fs-toggle-btn" id="fsToggleBtn" aria-label="Bedieningspaneel in/uitklappen">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>
           </svg>
         </button>
 
         <div class="fs-card-inner">
           <div class="progress-section">
-            <input type="range" id="fsSeekSlider" min="0" max="100" value="0" disabled>
+            <input type="range" id="fsSeekSlider" min="0" max="100" value="0" disabled aria-label="Voortgang afspelen fullscreen">
             <div class="time-display">
               <span id="fsCurrentTime">00:00</span>
               <span id="fsDurationTime">00:00</span>
@@ -496,12 +502,12 @@
           </div>
 
           <div class="controls-main">
-            <button id="fsPlayBtn" class="btn-action btn-play" disabled>
-              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <button type="button" id="fsPlayBtn" class="btn-action btn-play" disabled>
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
               Afspelen
             </button>
-            <button id="fsStopBtn" class="btn-action btn-stop" disabled>
-              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+            <button type="button" id="fsStopBtn" class="btn-action btn-stop" disabled>
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg>
               Stop
             </button>
           </div>
@@ -512,13 +518,13 @@
               <span class="channel-val" id="fsVocalVolVal">100%</span>
             </div>
             <div class="slider-wrapper">
-              <input type="range" id="fsVocalVol" min="0" max="1" step="0.01" value="1">
+              <input type="range" id="fsVocalVol" min="0" max="1" step="0.01" value="1" aria-label="Fullscreen Zang Volume">
             </div>
             <div class="presets">
-              <button class="btn-preset mute" id="fsVocalMuteBtn">Mute</button>
-              <button class="btn-preset" id="fsPreset30">30%</button>
-              <button class="btn-preset" id="fsPreset70">70%</button>
-              <button class="btn-preset active" id="fsPreset100">100%</button>
+              <button type="button" class="btn-preset mute" id="fsVocalMuteBtn">Mute</button>
+              <button type="button" class="btn-preset" id="fsPreset30">30%</button>
+              <button type="button" class="btn-preset" id="fsPreset70">70%</button>
+              <button type="button" class="btn-preset active" id="fsPreset100">100%</button>
             </div>
           </div>
         </div>
@@ -532,22 +538,22 @@
         <span class="offset-value" id="offsetDisplay">+0.0s</span>
       </div>
       <div class="slider-wrapper">
-        <input type="range" id="offsetSlider" min="-10" max="10" step="0.1" value="0.0">
+        <input type="range" id="offsetSlider" min="-10" max="10" step="0.1" value="0.0" aria-label="Tekst vertraging aanpassen">
       </div>
       <div class="offset-btns">
-        <button class="btn-offset" id="btnOffsetMinus4">-0.4s</button>
-        <button class="btn-offset" id="btnOffsetMinus2">-0.2s</button>
-        <button class="btn-offset" id="btnOffsetMinus1">-0.1s</button>
-        <button class="btn-offset reset" id="btnOffsetReset">0.0s</button>
-        <button class="btn-offset" id="btnOffsetPlus1">+0.1s</button>
-        <button class="btn-offset" id="btnOffsetPlus2">+0.2s</button>
-        <button class="btn-offset" id="btnOffsetPlus4">+0.4s</button>
+        <button type="button" class="btn-offset" id="btnOffsetMinus4">-0.4s</button>
+        <button type="button" class="btn-offset" id="btnOffsetMinus2">-0.2s</button>
+        <button type="button" class="btn-offset" id="btnOffsetMinus1">-0.1s</button>
+        <button type="button" class="btn-offset reset" id="btnOffsetReset">0.0s</button>
+        <button type="button" class="btn-offset" id="btnOffsetPlus1">+0.1s</button>
+        <button type="button" class="btn-offset" id="btnOffsetPlus2">+0.2s</button>
+        <button type="button" class="btn-offset" id="btnOffsetPlus4">+0.4s</button>
       </div>
     </div>
 
     <!-- Hoofd Voortgangsbalk -->
     <div class="progress-section">
-      <input type="range" id="seekSlider" min="0" max="100" value="0" disabled>
+      <input type="range" id="seekSlider" min="0" max="100" value="0" disabled aria-label="Voortgang afspelen">
       <div class="time-display">
         <span id="currentTime">00:00</span>
         <span id="durationTime">00:00</span>
@@ -556,12 +562,12 @@
 
     <!-- Hoofdbediening -->
     <div class="controls-main">
-      <button id="playBtn" class="btn-action btn-play" disabled>
-        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <button type="button" id="playBtn" class="btn-action btn-play" disabled>
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
         Afspelen
       </button>
-      <button id="stopBtn" class="btn-action btn-stop" disabled>
-        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+      <button type="button" id="stopBtn" class="btn-action btn-stop" disabled>
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg>
         Stop
       </button>
     </div>
@@ -574,13 +580,13 @@
           <span class="channel-val" id="vocalVolVal">100%</span>
         </div>
         <div class="slider-wrapper">
-          <input type="range" id="vocalVol" min="0" max="1" step="0.01" value="1">
+          <input type="range" id="vocalVol" min="0" max="1" step="0.01" value="1" aria-label="Zang Volume">
         </div>
         <div class="presets">
-          <button class="btn-preset mute" id="vocalMuteBtn">Mute</button>
-          <button class="btn-preset" id="mainPreset30">30%</button>
-          <button class="btn-preset" id="mainPreset70">70%</button>
-          <button class="btn-preset active" id="mainPreset100">100%</button>
+          <button type="button" class="btn-preset mute" id="vocalMuteBtn">Mute</button>
+          <button type="button" class="btn-preset" id="mainPreset30">30%</button>
+          <button type="button" class="btn-preset" id="mainPreset70">70%</button>
+          <button type="button" class="btn-preset active" id="mainPreset100">100%</button>
         </div>
       </div>
 
@@ -590,7 +596,7 @@
           <span class="channel-val" id="musicVolVal">100%</span>
         </div>
         <div class="slider-wrapper">
-          <input type="range" id="musicVol" min="0" max="1" step="0.01" value="1">
+          <input type="range" id="musicVol" min="0" max="1" step="0.01" value="1" aria-label="Muziek Volume">
         </div>
       </div>
     </div>
@@ -599,20 +605,20 @@
   </div>
 
   <!-- Modal Auth (Inloggen) -->
-  <div class="modal-overlay" id="authModal">
+  <div class="modal-overlay" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
     <div class="modal-card">
       <div class="modal-header">
-        <span class="modal-title">🔐 Inloggen</span>
-        <button class="modal-close" id="btnCloseAuthModal">✕</button>
+        <span class="modal-title" id="authTitle">🔐 Inloggen</span>
+        <button type="button" class="modal-close" id="btnCloseAuthModal" aria-label="Sluiten">✕</button>
       </div>
       <form id="loginForm">
         <div class="form-group">
           <label for="loginUser">Gebruikersnaam</label>
-          <input type="text" id="loginUser" required placeholder="Voer gebruikersnaam in">
+          <input type="text" id="loginUser" required placeholder="Voer gebruikersnaam in" autocomplete="username">
         </div>
         <div class="form-group">
           <label for="loginPin">Pincode / Wachtwoord</label>
-          <input type="password" id="loginPin" required placeholder="****">
+          <input type="password" id="loginPin" required placeholder="****" autocomplete="current-password">
         </div>
         <button type="submit" class="btn-submit">Aanmelden</button>
       </form>
@@ -620,16 +626,16 @@
   </div>
 
   <!-- Modal Admin Panel -->
-  <div class="modal-overlay" id="adminModal">
+  <div class="modal-overlay" id="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
     <div class="modal-card">
       <div class="modal-header">
-        <span class="modal-title">⚙️ Gebruikersbeheer</span>
-        <button class="modal-close" id="btnCloseAdminModal">✕</button>
+        <span class="modal-title" id="adminTitle">⚙️ Gebruikersbeheer</span>
+        <button type="button" class="modal-close" id="btnCloseAdminModal" aria-label="Sluiten">✕</button>
       </div>
       <div id="adminContent">
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Beheer hier karaokegebruikers en rechten.</p>
         <ul id="userList" style="list-style: none; margin-bottom: 12px; font-size: 0.85rem;"></ul>
-        <button class="btn-submit" id="btnAddUser" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color);">+ Nieuwe Gebruiker</button>
+        <button type="button" class="btn-submit" id="btnAddUser" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color);">+ Nieuwe Gebruiker</button>
       </div>
     </div>
   </div>
@@ -642,7 +648,6 @@
   <!-- Event Handler Binding script voor Knoppen & Modals -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // Elementen ophalen
       const btnOpenLocal = document.getElementById("btnOpenLocal");
       const zipInput = document.getElementById("zipInput");
       const btnLoginModal = document.getElementById("btnLoginModal");
@@ -673,13 +678,31 @@
         });
       }
 
-      // 3. Modal Sluiten Knoppen
+      // 3. Modal Sluiten Knoppen & Backdrop Click
+      const closeModal = (modal) => modal && modal.classList.remove("open");
+
       if (btnCloseAuthModal && authModal) {
-        btnCloseAuthModal.addEventListener("click", () => authModal.classList.remove("open"));
+        btnCloseAuthModal.addEventListener("click", () => closeModal(authModal));
       }
       if (btnCloseAdminModal && adminModal) {
-        btnCloseAdminModal.addEventListener("click", () => adminModal.classList.remove("open"));
+        btnCloseAdminModal.addEventListener("click", () => closeModal(adminModal));
       }
+
+      [authModal, adminModal].forEach((modal) => {
+        if (modal) {
+          modal.addEventListener("click", (e) => {
+            if (e.target === modal) closeModal(modal);
+          });
+        }
+      });
+
+      // Escape-toets ondersteuning voor het sluiten van modals
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeModal(authModal);
+          closeModal(adminModal);
+        }
+      });
 
       // 4. Inlogformulier verwerken via NAS API
       if (loginForm) {
@@ -703,7 +726,7 @@
 
             if (data.success) {
               localStorage.setItem("karaoke_admin_token", data.token);
-              if (authModal) authModal.classList.remove("open");
+              closeModal(authModal);
               if (statusBar) statusBar.textContent = "Ingelogd als beheerder.";
               alert("Succesvol ingelogd!");
             } else {
