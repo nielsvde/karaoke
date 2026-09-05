@@ -732,7 +732,7 @@
       <button type="button" class="btn-zip btn-logout" id="btnLogout" style="display: none;">
         🚪 Uitloggen
       </button>
-      <input type="file" id="zipInput" accept=".kar,.zip,application/x-zip-compressed,application/zip,application/octet-stream" multiple>
+      <input type="file" id="zipInput" accept=".kar,.zip,application/x-zip-compressed,application/zip,application/octet-stream" multiple aria-label="Upload KAR of ZIP bestanden">
     </div>
 
     <!-- GEBRUIKERS STARTINTERFACE (ZICHTBAAR VOOR NORMAL USERS) -->
@@ -784,7 +784,7 @@
     </div>
 
     <!-- Lyrics Container -->
-    <div class="lyrics-wrapper" id="lyricsWrapper">
+    <div id="lyricsWrapper" class="lyrics-wrapper">
       <button type="button" class="btn-fullscreen" id="fullscreenBtn" aria-label="Volledig scherm openen">
         <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
@@ -794,8 +794,8 @@
 
       <button type="button" class="btn-close-fullscreen" id="closeFullscreenBtn" title="Sluiten" aria-label="Volledig scherm sluiten">✕</button>
 
-      <div class="lyrics-container" id="lyricsContainer">
-        <div class="lyric-line">Kies een .kar bestand om te starten...</div>
+      <div id="lyricsContainer" class="lyrics-container">
+        <div class="lyric-line">Geen nummer geladen</div>
       </div>
 
       <!-- Inklapbare speler in Fullscreen -->
