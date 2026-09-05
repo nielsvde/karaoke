@@ -2,6 +2,22 @@
  * Home.js - Beheert de authenticatie, gebruikersinterface 
  * en synchronisatie van de NAS-afspeellijst.
  */
+
+// Visueel verbergen van de ongewenste elementen (lokale knop, lyrics onderaan, statusbalk)
+const hideStyle = document.createElement("style");
+hideStyle.textContent = `
+  #btnOpenLocal,
+  .btn-open-local,
+  #statusBar,
+  .status-bar,
+  #lyricsContainer,
+  .lyrics-container,
+  #lyricsWrapper:not(.fullscreen) {
+    display: none !important;
+  }
+`;
+document.head.appendChild(hideStyle);
+
 document.addEventListener("DOMContentLoaded", () => {
   // DOM Elementen
   const btnLoginModal = document.getElementById("btnLoginModal");
