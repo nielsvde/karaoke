@@ -1,11 +1,9 @@
 /**
- * Home.js - Beheert de authenticatie, rollenweergave, gebruikersinterface 
- * en synchronisatie van de NAS-afspeellijst (via index.php).
+ * Home.js - Beheert de authenticatie, gebruikersinterface 
+ * en synchronisatie van de NAS-afspeellijst.
  */
 document.addEventListener("DOMContentLoaded", () => {
   // DOM Elementen
-  const btnOpenLocal = document.getElementById("btnOpenLocal");
-  const zipInput = document.getElementById("zipInput");
   const btnLoginModal = document.getElementById("btnLoginModal");
   const btnLogout = document.getElementById("btnLogout");
   const authModal = document.getElementById("authModal");
@@ -43,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loginUser.value = savedUsername;
   }
 
-  // --- 1. AFSPEELLIJST OPHALEN VAN DE NAS (ZOALS IN PLAYER.JS) ---
+  // --- 1. AFSPEELLIJST OPHALEN VAN DE NAS ---
   async function loadLiedjesVanNAS() {
     try {
       if (statusBar) statusBar.textContent = "Verbinden met NAS...";
@@ -52,7 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!response.ok) throw new Error(`HTTP Fout: ${response.status}`);
 
       const bestanden = await response.json();
-      let toegevoegdCount = 0;
 
       bestanden.forEach(item => {
         let fileName = "";
@@ -75,12 +72,10 @@ document.addEventListener("DOMContentLoaded", () => {
               url: fullUrl,
               file: null
             });
-            toegevoegdCount++;
           }
         }
       });
 
-      // Update de UI van Home.js en eventueel de player list
       if (typeof window.updatePlaylistUI === 'function') {
         window.updatePlaylistUI();
       }
@@ -102,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Exporteer functie zodat player.js of knoppen deze ook direct kunnen aanroepen
   window.loadLiedjesVanNAS = loadLiedjesVanNAS;
 
   // --- 2. AUTHENTICATIE EN SESSIE BEHEER ---
@@ -112,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem("karaoke_login_time");
 
     if (authModal) authModal.classList.remove("hidden");
-    if (btnLoginModal) btnLoginModal.textContent = "🔐 Inloggen";
+    if (btnLoginModal) btnLoginModal.style.display = "inline-block";
     if (btnLogout) btnLogout.style.display = "none";
     if (statusBar) statusBar.textContent = "Log in om te beginnen...";
   }
@@ -122,12 +116,26 @@ document.addEventListener("DOMContentLoaded", () => {
       if (userStartView) userStartView.style.display = "none";
       if (adminControlsView) adminControlsView.style.display = "block";
       if (advancedMixerSection) advancedMixerSection.style.display = "block";
-      if (btnLoginModal) btnLoginModal.textContent = "⚙️ Gebruikersbeheer";
+      if (btnLoginModal) {
+        btnLoginModal.style.display = "inline-block";
+        btnLoginModal.textContent = "⚙️ Gebruikersbeheer";
+      }
     } else {
       if (userStartView) userStartView.style.display = "block";
       if (adminControlsView) adminControlsView.style.display = "none";
       if (advancedMixerSection) advancedMixerSection.style.display = "none";
-      if (btnLoginModal) btnLoginModal.textContent = "👤 Ingelogd";
+      // Verberg de inlogknop/ingelogd knop volledig wanneer gewone gebruiker is ingelogd
+      if (btnLoginModal) btnLoginModal.style.display = "none";
+    }
+
+    // Verplaats de uitlogknop naar de onderkant van het scherm
+    if (btnLogout) {
+      btnLogout.style.display = "flex";
+      btnLogout.style.position = "fixed";
+      btnLogout.style.bottom = "15px";
+      btnLogout.style.left = "50%";
+      btnLogout.style.transform = "translateX(-50%)";
+      btnLogout.style.zIndex = "99";
     }
   }
 
@@ -139,10 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (token && loginTime && (now - parseInt(loginTime, 10) < EXPIRATION_TIME_MS)) {
       if (authModal) authModal.classList.add("hidden");
-      if (btnLogout) btnLogout.style.display = "flex";
       applyRoleUI(role);
-
-      // Laad de afspeellijst zodra de gebruiker is ingelogd
       loadLiedjesVanNAS();
     } else {
       logoutSession();
@@ -154,10 +159,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- 3. EVENT LISTENERS ---
   if (btnLogout) {
     btnLogout.addEventListener("click", logoutSession);
-  }
-
-  if (btnOpenLocal && zipInput) {
-    btnOpenLocal.addEventListener("click", () => zipInput.click());
   }
 
   if (btnLoginModal) {
@@ -177,6 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnCloseAdminModal.addEventListener("click", () => closeModal(adminModal));
   }
 
+  // Start Karaoke Knop
   if (userStartBtn) {
     userStartBtn.addEventListener("click", () => {
       const playBtn = document.getElementById("playBtn");
@@ -250,7 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (userHeroCover) {
       if (coverSrc) {
-        userHeroCover.innerHTML = `<img src="${coverSrc}" alt="Cover">`;
+        userHeroCover.innerHTML = `<img src="${coverSrc}" alt="Cover" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">`;
       } else {
         userHeroCover.innerHTML = "🎵";
       }
@@ -278,6 +280,11 @@ document.addEventListener("DOMContentLoaded", () => {
       el.addEventListener("click", () => {
         document.querySelectorAll(".user-library-item").forEach(i => i.classList.remove("active"));
         el.classList.add("active");
+
+        // Zet vast een laadstatus neer op de hero card
+        if (userHeroTitle) userHeroTitle.textContent = item.title || item.name;
+        if (userHeroStatus) userHeroStatus.textContent = "Nummer inladen...";
+
         if (onSelectCallback) onSelectCallback(index);
       });
 
