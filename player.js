@@ -8,11 +8,12 @@ const NAS_INDEX_URL = "https://karaokenas.synology.me:8444/karaoke/index.php";
 let audioCtx = null, musicBuffer = null, vocalBuffer = null;
 let musicSource = null, vocalSource = null, musicGainNode = null, vocalGainNode = null;
 let isPlaying = false, startTime = 0, pauseOffset = 0, animFrame = null;
+let isTrackLoading = false; // <-- NIEUW: Voorkomt starten zolang sporen nog decoderen
 let lyricsData = [], activeLineIndex = -1;
 
 let playlist = [];
 let currentTrackIndex = -1;
-let currentCoverObjectUrl = null; // Voor net opruimen van geheugen
+let currentCoverObjectUrl = null;
 
 const savedOffset = localStorage.getItem('karaoke_userOffset');
 let userOffset = savedOffset !== null ? parseFloat(savedOffset) : 0.0;
@@ -184,7 +185,7 @@ function renderPlaylistItems(items) {
     const originalIndex = playlist.indexOf(item);
     const li = document.createElement('li');
     li.className = `playlist-item ${originalIndex === currentTrackIndex ? 'active' : ''}`;
-    li.onclick = () => loadTrackFromPlaylist(originalIndex, false); // Geen autostart
+    li.onclick = () => loadTrackFromPlaylist(originalIndex, false);
     li.innerHTML = `
       <span class="playlist-item-title">${item.title}</span>
       ${originalIndex === currentTrackIndex ? '<span>▶</span>' : ''}
@@ -203,6 +204,12 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
   if (index < 0 || index >= playlist.length) return;
 
   stopAudio();
+  
+  // <-- NIEUW: Zet laadstatus op true en deactiveer de afspeelknoppen
+  isTrackLoading = true;
+  if (playBtn) playBtn.disabled = true;
+  if (fsPlayBtn) fsPlayBtn.disabled = true;
+
   currentTrackIndex = index;
   const track = playlist[index];
 
@@ -215,7 +222,6 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
   const trackStatusEl = document.getElementById('trackStatus');
   if (trackStatusEl) trackStatusEl.textContent = "Pakket verwerken...";
 
-  // Ruim oude cover op
   if (currentCoverObjectUrl) {
     URL.revokeObjectURL(currentCoverObjectUrl);
     currentCoverObjectUrl = null;
@@ -284,11 +290,12 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
       coverContainer.innerHTML = extractedCoverUrl ? `<img src="${extractedCoverUrl}" alt="Cover">` : "🎵";
     }
 
+    // <-- NIEUW: Laden is afgerond, geef de knoppen vrij
+    isTrackLoading = false;
     checkReady();
     if (trackStatusEl) trackStatusEl.textContent = "Nummer geladen";
     if (statusBar) statusBar.textContent = "Klaar om af te spelen!";
 
-    // Update externe hero card indien aanwezig
     if (typeof window.updateUserHeroCard === "function") {
       window.updateUserHeroCard(track.title, extractedCoverUrl);
     }
@@ -298,6 +305,7 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
     }
   } catch (err) {
     console.error("Load Error:", err);
+    isTrackLoading = false; // <-- NIEUW: Bij fouten vlag resetten
     if (statusBar) statusBar.textContent = "Fout bij inladen van KAR-bestand.";
     if (trackStatusEl) trackStatusEl.textContent = "Kan bestand niet verwerken";
   }
@@ -435,7 +443,7 @@ function updateLyricsDisplay(currentPos) {
 
 function checkReady() {
   const duration = getMaxDuration();
-  if (duration > 0) {
+  if (duration > 0 && !isTrackLoading) { // <-- NIEUW: Alleen activeren als het laden klaar is
     if (playBtn) playBtn.disabled = false; 
     if (stopBtn) stopBtn.disabled = false; 
     if (seekSlider) seekSlider.disabled = false;
@@ -450,6 +458,11 @@ function checkReady() {
 }
 
 function startAudio(offset = 0) {
+  if (isTrackLoading) { // <-- NIEUW: Voorkom starten zolang sporen decoderen
+    if (statusBar) statusBar.textContent = "Even geduld, sporen worden nog geladen...";
+    return;
+  }
+
   initAudio();
   stopAudioSources();
 
@@ -505,6 +518,11 @@ function updateProgress() {
 }
 
 function togglePlayPause() {
+  if (isTrackLoading) { // <-- NIEUW: Blokkeer pauze/afspelen knop gedurende het laden
+    if (statusBar) statusBar.textContent = "Even geduld, sporen worden nog geladen...";
+    return;
+  }
+
   if (isPlaying) {
     pauseOffset = audioCtx.currentTime - startTime;
     stopAudioSources();
@@ -544,6 +562,7 @@ function stopAudio() {
 }
 
 function seekToTime(targetTime) {
+  if (isTrackLoading) return;
   pauseOffset = Math.max(0, targetTime);
   const val = (pauseOffset / getMaxDuration()) * 100;
   if (seekSlider) seekSlider.value = val; 
