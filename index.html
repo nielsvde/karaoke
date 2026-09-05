@@ -638,5 +638,86 @@
   <script src="auth.js"></script>
   <script src="admin.js"></script>
   <script src="player.js"></script>
+
+  <!-- Event Handler Binding script voor Knoppen & Modals -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Elementen ophalen
+      const btnOpenLocal = document.getElementById("btnOpenLocal");
+      const zipInput = document.getElementById("zipInput");
+      const btnLoginModal = document.getElementById("btnLoginModal");
+      const authModal = document.getElementById("authModal");
+      const adminModal = document.getElementById("adminModal");
+      const btnCloseAuthModal = document.getElementById("btnCloseAuthModal");
+      const btnCloseAdminModal = document.getElementById("btnCloseAdminModal");
+      const loginForm = document.getElementById("loginForm");
+      const statusBar = document.getElementById("statusBar");
+
+      // 1. Lokale bestanden knop koppelen aan file input
+      if (btnOpenLocal && zipInput) {
+        btnOpenLocal.addEventListener("click", () => zipInput.click());
+      }
+
+      // 2. Inlog/Beheer knop logica
+      if (btnLoginModal) {
+        btnLoginModal.addEventListener("click", () => {
+          if (typeof isAdminLoggedIn === "function" && isAdminLoggedIn()) {
+            if (adminModal) adminModal.classList.add("open");
+          } else {
+            if (authModal) {
+              authModal.classList.add("open");
+            } else if (typeof handleLogin === "function") {
+              handleLogin();
+            }
+          }
+        });
+      }
+
+      // 3. Modal Sluiten Knoppen
+      if (btnCloseAuthModal && authModal) {
+        btnCloseAuthModal.addEventListener("click", () => authModal.classList.remove("open"));
+      }
+      if (btnCloseAdminModal && adminModal) {
+        btnCloseAdminModal.addEventListener("click", () => adminModal.classList.remove("open"));
+      }
+
+      // 4. Inlogformulier verwerken via NAS API
+      if (loginForm) {
+        loginForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const user = document.getElementById("loginUser")?.value;
+          const pass = document.getElementById("loginPin")?.value;
+
+          if (!user || !pass) return;
+
+          if (statusBar) statusBar.textContent = "Verbinden met NAS...";
+
+          try {
+            const response = await fetch("https://karaokenas.synology.me:8444/karaoke/api.php?action=login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username: user, password: pass })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              localStorage.setItem("karaoke_admin_token", data.token);
+              if (authModal) authModal.classList.remove("open");
+              if (statusBar) statusBar.textContent = "Ingelogd als beheerder.";
+              alert("Succesvol ingelogd!");
+            } else {
+              alert("Inloggen mislukt: " + (data.message || "Onjuiste gegevens"));
+              if (statusBar) statusBar.textContent = "Inloggen mislukt.";
+            }
+          } catch (err) {
+            console.error("Fout tijdens inloggen:", err);
+            alert("Kan geen verbinding maken met de NAS.");
+            if (statusBar) statusBar.textContent = "Verbindingsfout NAS.";
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>
