@@ -57,6 +57,20 @@ document.addEventListener("DOMContentLoaded", () => {
     loginUser.value = savedUsername;
   }
 
+  /**
+   * Beheert de status en klikbaarheid van de 'Start Karaoke' knop
+   * @param {boolean} ready - Is het nummer volledig ingeladen (audio + lyrics)?
+   * @param {string} [message] - Optionele statustekst om weer te geven
+   */
+  window.setStartButtonState = function(ready, message) {
+    if (userStartBtn) {
+      userStartBtn.disabled = !ready;
+    }
+    if (userHeroStatus && message) {
+      userHeroStatus.textContent = message;
+    }
+  };
+
   // --- 1. AFSPEELLIJST OPHALEN VAN DE NAS ---
   async function loadLiedjesVanNAS() {
     try {
@@ -96,6 +110,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       window.renderUserLibrary(window.playlist, (index) => {
         if (typeof window.loadTrackFromPlaylist === 'function') {
+          // Deactiveer de knop totdat sporen en lyrics geladen zijn
+          window.setStartButtonState(false, "Nummer inladen...");
           window.loadTrackFromPlaylist(index);
         }
       });
@@ -104,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (window.playlist.length > 0) {
         const randomIndex = Math.floor(Math.random() * window.playlist.length);
         if (typeof window.loadTrackFromPlaylist === 'function') {
+          window.setStartButtonState(false, "Nummer inladen...");
           window.loadTrackFromPlaylist(randomIndex, false);
         }
       }
@@ -200,6 +217,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Start Karaoke Knop
   if (userStartBtn) {
     userStartBtn.addEventListener("click", () => {
+      // Controleer extra of de knop niet per ongeluk geklikt kan worden als deze disabled is
+      if (userStartBtn.disabled) return;
+
       const playBtn = document.getElementById("playBtn");
       if (playBtn) playBtn.click();
 
@@ -230,9 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const role = localStorage.getItem("karaoke_role");
       applyRoleUI(role);
       
-      if (userHeroStatus) {
-        userHeroStatus.textContent = "Klaar om af te spelen!";
-      }
+      window.setStartButtonState(true, "Klaar om af te spelen!");
     });
   }
 
@@ -279,8 +297,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- 4. GLOBALE WEERGAVE-FUNCTIES ---
   window.updateUserHeroCard = function(title, coverSrc) {
     if (userHeroTitle) userHeroTitle.textContent = title || "Onbekend nummer";
-    if (userHeroStatus) userHeroStatus.textContent = "Klaar om af te spelen!";
-    if (userStartBtn) userStartBtn.disabled = false;
 
     if (userHeroCover) {
       if (coverSrc) {
@@ -314,7 +330,9 @@ document.addEventListener("DOMContentLoaded", () => {
         el.classList.add("active");
 
         if (userHeroTitle) userHeroTitle.textContent = item.title || item.name;
-        if (userHeroStatus) userHeroStatus.textContent = "Nummer inladen...";
+        
+        // Schakel de knop uit tijdens het laden van de sporen/lyrics
+        window.setStartButtonState(false, "Nummer inladen...");
 
         if (onSelectCallback) onSelectCallback(index);
       });
