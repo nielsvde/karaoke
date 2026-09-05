@@ -20,40 +20,46 @@ let userOffset = savedOffset !== null ? parseFloat(savedOffset) : 0.0;
 let isUserSeeking = false;
 
 // DOM Elementen
-const zipInput = document.getElementById('zipInput');
-const btnOpenLocal = document.getElementById('btnOpenLocal');
-const playBtn = document.getElementById('playBtn');
-const stopBtn = document.getElementById('stopBtn');
-const fsPlayBtn = document.getElementById('fsPlayBtn');
-const fsStopBtn = document.getElementById('fsStopBtn');
+let zipInput = document.getElementById('zipInput');
+let btnOpenLocal = document.getElementById('btnOpenLocal');
+let playBtn = document.getElementById('playBtn');
+let stopBtn = document.getElementById('stopBtn');
+let fsPlayBtn = document.getElementById('fsPlayBtn');
+let fsStopBtn = document.getElementById('fsStopBtn');
 
-const nextBtn = document.getElementById('nextBtn');
-const prevBtn = document.getElementById('prevBtn');
-const fsNextBtn = document.getElementById('fsNextBtn');
-const fsPrevBtn = document.getElementById('fsPrevBtn');
+let nextBtn = document.getElementById('nextBtn');
+let prevBtn = document.getElementById('prevBtn');
+let fsNextBtn = document.getElementById('fsNextBtn');
+let fsPrevBtn = document.getElementById('fsPrevBtn');
 
-const musicVol = document.getElementById('musicVol');
-const vocalVol = document.getElementById('vocalVol');
-const fsVocalVol = document.getElementById('fsVocalVol');
-const musicVolVal = document.getElementById('musicVolVal');
-const vocalVolVal = document.getElementById('vocalVolVal');
-const fsVocalVolVal = document.getElementById('fsVocalVolVal');
+let musicVol = document.getElementById('musicVol');
+let vocalVol = document.getElementById('vocalVol');
+let fsVocalVol = document.getElementById('fsVocalVol');
+let musicVolVal = document.getElementById('musicVolVal');
+let vocalVolVal = document.getElementById('vocalVolVal');
+let fsVocalVolVal = document.getElementById('fsVocalVolVal');
 
-const statusBar = document.getElementById('statusBar');
-const seekSlider = document.getElementById('seekSlider');
-const fsSeekSlider = document.getElementById('fsSeekSlider');
-const currentTimeEl = document.getElementById('currentTime');
-const durationTimeEl = document.getElementById('durationTime');
-const fsCurrentTimeEl = document.getElementById('fsCurrentTime');
-const fsDurationTimeEl = document.getElementById('fsDurationTime');
+let statusBar = document.getElementById('statusBar');
+let seekSlider = document.getElementById('seekSlider');
+let fsSeekSlider = document.getElementById('fsSeekSlider');
+let currentTimeEl = document.getElementById('currentTime');
+let durationTimeEl = document.getElementById('durationTime');
+let fsCurrentTimeEl = document.getElementById('fsCurrentTime');
+let fsDurationTimeEl = document.getElementById('fsDurationTime');
 
-const lyricsContainer = document.getElementById('lyricsContainer');
-const lyricsWrapper = document.getElementById('lyricsWrapper');
-const offsetDisplay = document.getElementById('offsetDisplay');
-const offsetSlider = document.getElementById('offsetSlider');
+let lyricsContainer = document.getElementById('lyricsContainer');
+let lyricsWrapper = document.getElementById('lyricsWrapper');
+let offsetDisplay = document.getElementById('offsetDisplay');
+let offsetSlider = document.getElementById('offsetSlider');
 
-const fsPlayerOverlay = document.getElementById('fsPlayerOverlay');
-const fsToggleBtn = document.getElementById('fsToggleBtn');
+let fsPlayerOverlay = document.getElementById('fsPlayerOverlay');
+let fsToggleBtn = document.getElementById('fsToggleBtn');
+
+// Admin / Navigatie Elementen
+let btnAdminNav = document.getElementById('btnAdminNav');
+let adminNavLabel = document.getElementById('adminNavLabel');
+let homeScreen = document.getElementById('homeScreen');
+let playerScreen = document.getElementById('playerScreen');
 
 function scrambleBuffer(arrayBuffer, key) {
   const uint8 = new Uint8Array(arrayBuffer);
@@ -93,7 +99,7 @@ function formatTime(sec) {
 }
 
 function toggleFullscreen() {
-  const wrapper = lyricsWrapper || document.documentElement;
+  const wrapper = lyricsWrapper || document.getElementById('lyricsWrapper') || document.documentElement;
   if (!document.fullscreenElement && !wrapper.classList.contains('fullscreen')) {
     if (wrapper.requestFullscreen) {
       wrapper.requestFullscreen().catch(() => wrapper.classList.add('fullscreen'));
@@ -107,11 +113,58 @@ function toggleFullscreen() {
 }
 
 document.addEventListener('fullscreenchange', () => {
-  if (lyricsWrapper) {
-    lyricsWrapper.classList.toggle('fullscreen', !!document.fullscreenElement);
+  const wrapper = lyricsWrapper || document.getElementById('lyricsWrapper');
+  if (wrapper) {
+    wrapper.classList.toggle('fullscreen', !!document.fullscreenElement);
   }
 });
 
+/* ==========================================================================
+   ADMIN / SCHERM NAVIGATIE
+   ========================================================================== */
+function checkAdminAuth() {
+  btnAdminNav = document.getElementById('btnAdminNav');
+  const isAdmin = localStorage.getItem('role') === 'admin' || localStorage.getItem('isAdmin') === 'true';
+  
+  if (btnAdminNav) {
+    if (isAdmin) {
+      btnAdminNav.classList.remove('hidden');
+      btnAdminNav.style.display = 'inline-flex';
+    } else {
+      btnAdminNav.classList.add('hidden');
+      btnAdminNav.style.display = 'none';
+    }
+  }
+}
+
+function toggleAdminScreen() {
+  homeScreen = document.getElementById('homeScreen');
+  playerScreen = document.getElementById('playerScreen');
+  adminNavLabel = document.getElementById('adminNavLabel');
+
+  if (!homeScreen || !playerScreen) return;
+
+  const isHomeVisible = !homeScreen.classList.contains('hidden') && homeScreen.style.display !== 'none';
+
+  if (isHomeVisible) {
+    homeScreen.classList.add('hidden');
+    homeScreen.style.display = 'none';
+    playerScreen.classList.remove('hidden');
+    playerScreen.style.display = 'block';
+    if (adminNavLabel) adminNavLabel.textContent = "Naar Home";
+  } else {
+    playerScreen.classList.add('hidden');
+    playerScreen.style.display = 'none';
+    homeScreen.classList.remove('hidden');
+    homeScreen.style.display = 'block';
+    if (adminNavLabel) adminNavLabel.textContent = "Naar Player";
+  }
+}
+window.updateAdminNavStatus = checkAdminAuth;
+
+/* ==========================================================================
+   NAS & PLAYLIST LOGICA
+   ========================================================================== */
 async function loadLiedjesVanNAS() {
   try {
     if (statusBar) statusBar.textContent = "Verbinden met NAS...";
@@ -200,6 +253,9 @@ function filterPlaylist() {
   renderPlaylistItems(filtered);
 }
 
+/* ==========================================================================
+   TRACK LADEN & VERWERKEN
+   ========================================================================== */
 async function loadTrackFromPlaylist(index, autoStart = false) {
   if (index < 0 || index >= playlist.length) return;
 
@@ -239,6 +295,7 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
     let extractedCoverUrl = null;
 
     if (zip) {
+      // Cover-afbeelding opsporen
       for (const filename of Object.keys(zip.files)) {
         const lower = filename.toLowerCase();
         if (lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.webp')) {
@@ -251,6 +308,7 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
 
       const filenames = Object.keys(zip.files).sort();
 
+      // LRC Songtekst opsporen
       for (const filename of filenames) {
         const zipEntry = zip.files[filename];
         if (zipEntry.dir) continue;
@@ -261,6 +319,7 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
         }
       }
 
+      // Audio opsporen
       for (const filename of filenames) {
         const zipEntry = zip.files[filename];
         if (zipEntry.dir) continue;
@@ -288,6 +347,9 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
     if (coverContainer) {
       coverContainer.innerHTML = extractedCoverUrl ? `<img src="${extractedCoverUrl}" alt="Cover">` : "🎵";
     }
+
+    // Songtekst direct weergeven op het scherm
+    renderLyrics();
 
     isTrackLoading = false;
     checkReady();
@@ -372,6 +434,9 @@ function bufferToBase64(bytes) {
   return window.btoa(binary);
 }
 
+/* ==========================================================================
+   SONGTEKST & LYRICS LOGICA
+   ========================================================================== */
 function parseLRC(lrcText) {
   lyricsData = [];
   const lineTimeRegex = /^\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)$/;
@@ -390,7 +455,9 @@ function parseLRC(lrcText) {
 }
 
 function renderLyrics() {
+  lyricsContainer = document.getElementById('lyricsContainer');
   if (!lyricsContainer) return;
+
   lyricsContainer.innerHTML = '';
   activeLineIndex = -1;
 
@@ -398,6 +465,7 @@ function renderLyrics() {
     lyricsContainer.innerHTML = '<div class="lyric-line">Geen songtekst aanwezig</div>';
     return;
   }
+
   lyricsData.forEach((line, index) => {
     const div = document.createElement('div');
     div.className = 'lyric-line';
@@ -406,6 +474,7 @@ function renderLyrics() {
     div.addEventListener('click', () => seekToTime(line.time - userOffset));
     lyricsContainer.appendChild(div);
   });
+  
   updateLyricsDisplay(0);
 }
 
@@ -442,6 +511,9 @@ function updateLyricsDisplay(currentPos) {
   }
 }
 
+/* ==========================================================================
+   AUDIO BEDIENING & PLAYBACK
+   ========================================================================== */
 function checkReady() {
   const duration = getMaxDuration();
   if (duration > 0 && !isTrackLoading) {
@@ -618,11 +690,15 @@ function applyVocalVolume(val) {
   }
 }
 
-// Expose functies globaal voor home.js
+// Expose functies globaal
 window.loadTrackFromPlaylist = loadTrackFromPlaylist;
 
-// Event Listeners koppelen
+/* ==========================================================================
+   INITIALISATIE EN EVENT LISTENERS
+   ========================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
+  btnAdminNav?.addEventListener('click', toggleAdminScreen);
+
   btnOpenLocal?.addEventListener('click', () => zipInput?.click());
   
   zipInput?.addEventListener('change', async (e) => {
@@ -641,10 +717,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updatePlaylistUI();
     if (playlist.length > 0) {
-      // Laad het laatst geïmporteerde nummer in zonder direct af te spelen
       loadTrackFromPlaylist(startIndex < playlist.length ? startIndex : 0, false);
     }
-    // Reset file input zodat hetzelfde bestand opnieuw gekozen kan worden indien nodig
     zipInput.value = '';
   });
 
@@ -704,5 +778,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnOffsetPlus4')?.addEventListener('click', () => adjustOffset(0.4));
 
   updateOffsetDisplay();
+  checkAdminAuth();
   loadLiedjesVanNAS();
 });
