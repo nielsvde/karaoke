@@ -92,30 +92,32 @@ function formatTime(sec) {
 }
 
 function toggleFullscreen() {
-  if (!document.fullscreenElement && !lyricsWrapper.classList.contains('fullscreen')) {
-    if (lyricsWrapper.requestFullscreen) {
-      lyricsWrapper.requestFullscreen().catch(() => lyricsWrapper.classList.add('fullscreen'));
+  const wrapper = lyricsWrapper || document.documentElement;
+  if (!document.fullscreenElement && !wrapper.classList.contains('fullscreen')) {
+    if (wrapper.requestFullscreen) {
+      wrapper.requestFullscreen().catch(() => wrapper.classList.add('fullscreen'));
     } else {
-      lyricsWrapper.classList.add('fullscreen');
+      wrapper.classList.add('fullscreen');
     }
   } else {
     if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen();
-    lyricsWrapper.classList.remove('fullscreen');
+    wrapper.classList.remove('fullscreen');
   }
 }
 
 document.addEventListener('fullscreenchange', () => {
-  lyricsWrapper.classList.toggle('fullscreen', !!document.fullscreenElement);
+  if (lyricsWrapper) {
+    lyricsWrapper.classList.toggle('fullscreen', !!document.fullscreenElement);
+  }
 });
 
 async function loadLiedjesVanNAS() {
   try {
-    statusBar.textContent = "Verbinden met NAS...";
+    if (statusBar) statusBar.textContent = "Verbinden met NAS...";
     const response = await fetch(NAS_INDEX_URL);
     if (!response.ok) throw new Error(`HTTP Fout: ${response.status}`);
     
     const bestanden = await response.json();
-    let toegevoegdCount = 0;
 
     bestanden.forEach(item => {
       let fileName = "";
@@ -133,21 +135,20 @@ async function loadLiedjesVanNAS() {
         const cleanTitle = fileName.split('/').pop().replace(/\.kar$/i, '').replace(/_/g, ' ');
         if (!playlist.some(p => p.url === fullUrl)) {
           playlist.push({ name: fileName.split('/').pop(), title: cleanTitle, url: fullUrl, file: null });
-          toegevoegdCount++;
         }
       }
     });
 
     updatePlaylistUI();
     if (playlist.length > 0) {
-      statusBar.textContent = `${playlist.length} nummers geladen van NAS.`;
+      if (statusBar) statusBar.textContent = `${playlist.length} nummers geladen van NAS.`;
       document.getElementById('playlistBody')?.classList.add('open');
     } else {
-      statusBar.textContent = "Geen .kar bestanden gevonden op NAS.";
+      if (statusBar) statusBar.textContent = "Geen .kar bestanden gevonden op NAS.";
     }
   } catch (err) {
     console.error("NAS ophaalfout:", err);
-    statusBar.textContent = "Fout bij ophalen lijst van NAS (CORS of netwerk).";
+    if (statusBar) statusBar.textContent = "Fout bij ophalen lijst van NAS (CORS of netwerk).";
   }
 }
 
@@ -183,7 +184,7 @@ function renderPlaylistItems(items) {
     const originalIndex = playlist.indexOf(item);
     const li = document.createElement('li');
     li.className = `playlist-item ${originalIndex === currentTrackIndex ? 'active' : ''}`;
-    li.onclick = () => loadTrackFromPlaylist(originalIndex, true);
+    li.onclick = () => loadTrackFromPlaylist(originalIndex, false); // Geen autostart
     li.innerHTML = `
       <span class="playlist-item-title">${item.title}</span>
       ${originalIndex === currentTrackIndex ? '<span>▶</span>' : ''}
@@ -193,7 +194,7 @@ function renderPlaylistItems(items) {
 }
 
 function filterPlaylist() {
-  const query = document.getElementById('playlistSearch').value.toLowerCase();
+  const query = document.getElementById('playlistSearch')?.value.toLowerCase() || '';
   const filtered = playlist.filter(item => item.title.toLowerCase().includes(query));
   renderPlaylistItems(filtered);
 }
@@ -206,9 +207,13 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
   const track = playlist[index];
 
   updatePlaylistUI();
-  statusBar.textContent = "Nummer ophalen & inladen...";
-  document.getElementById('trackTitle').textContent = track.title;
-  document.getElementById('trackStatus').textContent = "Pakket verwerken...";
+  if (statusBar) statusBar.textContent = "Nummer ophalen & inladen...";
+  
+  const trackTitleEl = document.getElementById('trackTitle');
+  if (trackTitleEl) trackTitleEl.textContent = track.title;
+  
+  const trackStatusEl = document.getElementById('trackStatus');
+  if (trackStatusEl) trackStatusEl.textContent = "Pakket verwerken...";
 
   // Ruim oude cover op
   if (currentCoverObjectUrl) {
@@ -280,8 +285,8 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
     }
 
     checkReady();
-    document.getElementById('trackStatus').textContent = "Nummer geladen";
-    statusBar.textContent = "Klaar om af te spelen!";
+    if (trackStatusEl) trackStatusEl.textContent = "Nummer geladen";
+    if (statusBar) statusBar.textContent = "Klaar om af te spelen!";
 
     // Update externe hero card indien aanwezig
     if (typeof window.updateUserHeroCard === "function") {
@@ -293,8 +298,8 @@ async function loadTrackFromPlaylist(index, autoStart = false) {
     }
   } catch (err) {
     console.error("Load Error:", err);
-    statusBar.textContent = "Fout bij inladen van KAR-bestand.";
-    document.getElementById('trackStatus').textContent = "Kan bestand niet verwerken";
+    if (statusBar) statusBar.textContent = "Fout bij inladen van KAR-bestand.";
+    if (trackStatusEl) trackStatusEl.textContent = "Kan bestand niet verwerken";
   }
 }
 
@@ -379,6 +384,7 @@ function parseLRC(lrcText) {
 }
 
 function renderLyrics() {
+  if (!lyricsContainer) return;
   lyricsContainer.innerHTML = '';
   if (lyricsData.length === 0) {
     lyricsContainer.innerHTML = '<div class="lyric-line">Geen songtekst aanwezig</div>';
@@ -430,11 +436,16 @@ function updateLyricsDisplay(currentPos) {
 function checkReady() {
   const duration = getMaxDuration();
   if (duration > 0) {
-    playBtn.disabled = false; stopBtn.disabled = false; seekSlider.disabled = false;
-    fsPlayBtn.disabled = false; fsStopBtn.disabled = false; fsSeekSlider.disabled = false;
+    if (playBtn) playBtn.disabled = false; 
+    if (stopBtn) stopBtn.disabled = false; 
+    if (seekSlider) seekSlider.disabled = false;
+    if (fsPlayBtn) fsPlayBtn.disabled = false; 
+    if (fsStopBtn) fsStopBtn.disabled = false; 
+    if (fsSeekSlider) fsSeekSlider.disabled = false;
+    
     const formatted = formatTime(duration);
-    durationTimeEl.textContent = formatted;
-    fsDurationTimeEl.textContent = formatted;
+    if (durationTimeEl) durationTimeEl.textContent = formatted;
+    if (fsDurationTimeEl) fsDurationTimeEl.textContent = formatted;
   }
 }
 
@@ -462,9 +473,9 @@ function startAudio(offset = 0) {
   isPlaying = true;
 
   const pauseBtnHtml = `<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> Pauze`;
-  playBtn.innerHTML = pauseBtnHtml;
-  fsPlayBtn.innerHTML = pauseBtnHtml;
-  statusBar.textContent = "Speelt af...";
+  if (playBtn) playBtn.innerHTML = pauseBtnHtml;
+  if (fsPlayBtn) fsPlayBtn.innerHTML = pauseBtnHtml;
+  if (statusBar) statusBar.textContent = "Speelt af...";
   updateProgress();
 }
 
@@ -481,12 +492,12 @@ function updateProgress() {
 
   if (!isUserSeeking) {
     const val = (currentPos / totalDur) * 100;
-    seekSlider.value = val || 0;
-    fsSeekSlider.value = val || 0;
+    if (seekSlider) seekSlider.value = val || 0;
+    if (fsSeekSlider) fsSeekSlider.value = val || 0;
     
     const formattedTime = formatTime(currentPos);
-    currentTimeEl.textContent = formattedTime;
-    fsCurrentTimeEl.textContent = formattedTime;
+    if (currentTimeEl) currentTimeEl.textContent = formattedTime;
+    if (fsCurrentTimeEl) fsCurrentTimeEl.textContent = formattedTime;
 
     updateLyricsDisplay(currentPos);
   }
@@ -500,9 +511,9 @@ function togglePlayPause() {
     isPlaying = false;
     cancelAnimationFrame(animFrame);
     const resumeBtnHtml = `<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Hervatten`;
-    playBtn.innerHTML = resumeBtnHtml;
-    fsPlayBtn.innerHTML = resumeBtnHtml;
-    statusBar.textContent = "Gepauzeerd.";
+    if (playBtn) playBtn.innerHTML = resumeBtnHtml;
+    if (fsPlayBtn) fsPlayBtn.innerHTML = resumeBtnHtml;
+    if (statusBar) statusBar.textContent = "Gepauzeerd.";
   } else {
     startAudio(pauseOffset);
   }
@@ -521,23 +532,26 @@ function stopAudio() {
   pauseOffset = 0;
   cancelAnimationFrame(animFrame);
   
-  seekSlider.value = 0; fsSeekSlider.value = 0;
-  currentTimeEl.textContent = "00:00"; fsCurrentTimeEl.textContent = "00:00";
+  if (seekSlider) seekSlider.value = 0; 
+  if (fsSeekSlider) fsSeekSlider.value = 0;
+  if (currentTimeEl) currentTimeEl.textContent = "00:00"; 
+  if (fsCurrentTimeEl) fsCurrentTimeEl.textContent = "00:00";
   
   const playBtnHtml = `<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Afspelen`;
-  playBtn.innerHTML = playBtnHtml;
-  fsPlayBtn.innerHTML = playBtnHtml;
-  statusBar.textContent = "Gestopt.";
+  if (playBtn) playBtn.innerHTML = playBtnHtml;
+  if (fsPlayBtn) fsPlayBtn.innerHTML = playBtnHtml;
+  if (statusBar) statusBar.textContent = "Gestopt.";
 }
 
 function seekToTime(targetTime) {
   pauseOffset = Math.max(0, targetTime);
   const val = (pauseOffset / getMaxDuration()) * 100;
-  seekSlider.value = val; fsSeekSlider.value = val;
+  if (seekSlider) seekSlider.value = val; 
+  if (fsSeekSlider) fsSeekSlider.value = val;
   
   const formattedTime = formatTime(pauseOffset);
-  currentTimeEl.textContent = formattedTime;
-  fsCurrentTimeEl.textContent = formattedTime;
+  if (currentTimeEl) currentTimeEl.textContent = formattedTime;
+  if (fsCurrentTimeEl) fsCurrentTimeEl.textContent = formattedTime;
 
   updateLyricsDisplay(pauseOffset);
   if (isPlaying) startAudio(pauseOffset);
@@ -551,10 +565,10 @@ function setupSeekEvents(slider) {
   slider.addEventListener('input', (e) => {
     const targetTime = (e.target.value / 100) * getMaxDuration();
     const formattedTime = formatTime(targetTime);
-    currentTimeEl.textContent = formattedTime;
-    fsCurrentTimeEl.textContent = formattedTime;
-    seekSlider.value = e.target.value;
-    fsSeekSlider.value = e.target.value;
+    if (currentTimeEl) currentTimeEl.textContent = formattedTime;
+    if (fsCurrentTimeEl) fsCurrentTimeEl.textContent = formattedTime;
+    if (seekSlider) seekSlider.value = e.target.value;
+    if (fsSeekSlider) fsSeekSlider.value = e.target.value;
     updateLyricsDisplay(targetTime);
   });
 
@@ -584,14 +598,17 @@ function applyVocalVolume(val) {
   }
 }
 
+// Expose functies globaal voor home.js
+window.loadTrackFromPlaylist = loadTrackFromPlaylist;
+
 // Event Listeners koppelen
 document.addEventListener('DOMContentLoaded', () => {
-  btnOpenLocal?.addEventListener('click', () => zipInput.click());
+  btnOpenLocal?.addEventListener('click', () => zipInput?.click());
   
   zipInput?.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-    statusBar.textContent = "Bestanden verwerken...";
+    if (statusBar) statusBar.textContent = "Bestanden verwerken...";
 
     for (const file of files) {
       const cleanTitle = file.name.replace(/\.(kar|zip)$/i, '').replace(/_/g, ' ');
@@ -601,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updatePlaylistUI();
-    if (currentTrackIndex === -1 && playlist.length > 0) loadTrackFromPlaylist(0);
+    if (currentTrackIndex === -1 && playlist.length > 0) loadTrackFromPlaylist(0, false);
   });
 
   document.getElementById('playlistHeader')?.addEventListener('click', () => {
