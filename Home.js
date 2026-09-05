@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const loginUser = document.getElementById("loginUser");
   const loginPin = document.getElementById("loginPin");
-  const statusBar = document.getElementById("statusBar");
 
   // Views
   const userStartView = document.getElementById("userStartView");
@@ -44,8 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- 1. AFSPEELLIJST OPHALEN VAN DE NAS ---
   async function loadLiedjesVanNAS() {
     try {
-      if (statusBar) statusBar.textContent = "Verbinden met NAS...";
-      
       const response = await fetch(NAS_INDEX_URL);
       if (!response.ok) throw new Error(`HTTP Fout: ${response.status}`);
 
@@ -85,15 +82,8 @@ document.addEventListener("DOMContentLoaded", () => {
           window.loadTrackFromPlaylist(index);
         }
       });
-
-      if (window.playlist.length > 0) {
-        if (statusBar) statusBar.textContent = `${window.playlist.length} nummers geladen van NAS.`;
-      } else {
-        if (statusBar) statusBar.textContent = "Geen .kar bestanden gevonden op NAS.";
-      }
     } catch (err) {
       console.error("NAS ophaalfout:", err);
-      if (statusBar) statusBar.textContent = "Fout bij ophalen lijst van NAS (CORS of netwerk).";
     }
   }
 
@@ -108,7 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (authModal) authModal.classList.remove("hidden");
     if (btnLoginModal) btnLoginModal.style.display = "inline-block";
     if (btnLogout) btnLogout.style.display = "none";
-    if (statusBar) statusBar.textContent = "Log in om te beginnen...";
   }
 
   function applyRoleUI(role) {
@@ -124,11 +113,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (userStartView) userStartView.style.display = "block";
       if (adminControlsView) adminControlsView.style.display = "none";
       if (advancedMixerSection) advancedMixerSection.style.display = "none";
-      // Verberg de inlogknop/ingelogd knop volledig wanneer gewone gebruiker is ingelogd
       if (btnLoginModal) btnLoginModal.style.display = "none";
     }
 
-    // Verplaats de uitlogknop naar de onderkant van het scherm
     if (btnLogout) {
       btnLogout.style.display = "flex";
       btnLogout.style.position = "fixed";
@@ -200,6 +187,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Luister naar het 'ended' event op het audio element om automatisch terug te keren naar de home-weergave
+  const audioPlayer = document.getElementById("audioPlayer") || document.querySelector("audio");
+  if (audioPlayer) {
+    audioPlayer.addEventListener("ended", () => {
+      if (document.fullscreenElement && typeof document.exitFullscreen === "function") {
+        document.exitFullscreen().catch(() => {});
+      }
+      
+      const role = localStorage.getItem("karaoke_role");
+      applyRoleUI(role);
+      
+      if (userHeroStatus) {
+        userHeroStatus.textContent = "Klaar om af te spelen!";
+      }
+    });
+  }
+
   // INLOGFORMULIER SUBMIT
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
@@ -208,8 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const pass = loginPin?.value;
 
       if (!user || !pass) return;
-
-      if (statusBar) statusBar.textContent = "Verbinden met NAS...";
 
       try {
         const response = await fetch(`${NAS_LOGIN_URL}?action=login`, {
@@ -234,12 +236,10 @@ document.addEventListener("DOMContentLoaded", () => {
           checkAuthStatus();
         } else {
           alert("Inloggen mislukt: " + (data.message || "Onjuiste gegevens"));
-          if (statusBar) statusBar.textContent = "Inloggen mislukt.";
         }
       } catch (err) {
         console.error("Fout tijdens inloggen:", err);
         alert("Kan geen verbinding maken met de NAS.");
-        if (statusBar) statusBar.textContent = "Verbindingsfout NAS.";
       }
     });
   }
@@ -281,7 +281,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".user-library-item").forEach(i => i.classList.remove("active"));
         el.classList.add("active");
 
-        // Zet vast een laadstatus neer op de hero card
         if (userHeroTitle) userHeroTitle.textContent = item.title || item.name;
         if (userHeroStatus) userHeroStatus.textContent = "Nummer inladen...";
 
