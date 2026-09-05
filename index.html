@@ -175,6 +175,15 @@
     }
     .btn-zip:hover { background: rgba(255, 255, 255, 0.15); }
 
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
     .track-card {
       background: rgba(15, 23, 42, 0.6);
       border: 1px solid var(--border-color);
@@ -553,6 +562,9 @@
       <button type="button" class="btn-zip" id="btnLoginModal" style="background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.3);">
         🔐 Inloggen
       </button>
+      <button type="button" class="btn-zip btn-logout" id="btnLogout" style="display: none;">
+        🚪 Uitloggen
+      </button>
       <input type="file" id="zipInput" accept=".kar,.zip,application/x-zip-compressed,application/zip,application/octet-stream" multiple>
     </div>
 
@@ -738,31 +750,73 @@
       const btnOpenLocal = document.getElementById("btnOpenLocal");
       const zipInput = document.getElementById("zipInput");
       const btnLoginModal = document.getElementById("btnLoginModal");
+      const btnLogout = document.getElementById("btnLogout");
       const authModal = document.getElementById("authModal");
       const adminModal = document.getElementById("adminModal");
       const btnCloseAdminModal = document.getElementById("btnCloseAdminModal");
       const loginForm = document.getElementById("loginForm");
+      const loginUser = document.getElementById("loginUser");
+      const loginPin = document.getElementById("loginPin");
       const statusBar = document.getElementById("statusBar");
 
-      // Check of er al een actieve sessie is
-      const token = localStorage.getItem("karaoke_admin_token");
-      const role = localStorage.getItem("karaoke_role");
+      const EXPIRATION_TIME_MS = 24 * 60 * 60 * 1000; // 24 uur in ms
 
-      if (token) {
-        authModal.classList.add("hidden");
-        if (role === "admin") {
-          btnLoginModal.textContent = "⚙️ Gebruikersbeheer";
+      // 0. Vul automatisch de opgeslagen gebruikersnaam in
+      const savedUsername = localStorage.getItem("karaoke_saved_username");
+      if (savedUsername && loginUser) {
+        loginUser.value = savedUsername;
+      }
+
+      // Functie voor uitloggen en de interface updaten
+      function logoutSession() {
+        localStorage.removeItem("karaoke_admin_token");
+        localStorage.removeItem("karaoke_role");
+        localStorage.removeItem("karaoke_login_time");
+        
+        if (authModal) authModal.classList.remove("hidden");
+        if (btnLoginModal) btnLoginModal.textContent = "🔐 Inloggen";
+        if (btnLogout) btnLogout.style.display = "none";
+        if (statusBar) statusBar.textContent = "Log in om te beginnen...";
+      }
+
+      // 1. Controleer bestaande sessie
+      function checkAuthStatus() {
+        const token = localStorage.getItem("karaoke_admin_token");
+        const role = localStorage.getItem("karaoke_role");
+        const loginTime = localStorage.getItem("karaoke_login_time");
+        const now = Date.now();
+
+        if (token && loginTime && (now - parseInt(loginTime, 10) < EXPIRATION_TIME_MS)) {
+          authModal.classList.add("hidden");
+          if (btnLogout) btnLogout.style.display = "flex";
+
+          if (role === "admin") {
+            btnLoginModal.textContent = "⚙️ Gebruikersbeheer";
+            if (statusBar) statusBar.textContent = "Ingelogd als beheerder.";
+          } else {
+            btnLoginModal.textContent = "👤 Ingelogd";
+            if (statusBar) statusBar.textContent = "Ingelogd als gebruiker.";
+          }
         } else {
-          btnLoginModal.textContent = "👤 Ingelogd";
+          logoutSession();
         }
       }
 
-      // 1. Lokale bestanden knop
+      checkAuthStatus();
+
+      // Event listener voor de Uitlogknop
+      if (btnLogout) {
+        btnLogout.addEventListener("click", () => {
+          logoutSession();
+        });
+      }
+
+      // Lokale bestanden openen
       if (btnOpenLocal && zipInput) {
         btnOpenLocal.addEventListener("click", () => zipInput.click());
       }
 
-      // 2. Beheer / Inlogknop
+      // Inlog/Beheer knop
       if (btnLoginModal) {
         btnLoginModal.addEventListener("click", () => {
           const currentRole = localStorage.getItem("karaoke_role");
@@ -775,7 +829,7 @@
         });
       }
 
-      // 3. Modals sluiten
+      // Modals sluiten
       const closeModal = (modal) => modal && modal.classList.remove("open");
 
       if (btnCloseAdminModal && adminModal) {
@@ -792,12 +846,12 @@
         if (e.key === "Escape") closeModal(adminModal);
       });
 
-      // 4. Inloggen via NAS API
+      // Inlogformulier afhandelen
       if (loginForm) {
         loginForm.addEventListener("submit", async (e) => {
           e.preventDefault();
-          const user = document.getElementById("loginUser")?.value;
-          const pass = document.getElementById("loginPin")?.value;
+          const user = loginUser?.value.trim();
+          const pass = loginPin?.value;
 
           if (!user || !pass) return;
 
@@ -814,18 +868,16 @@
 
             if (data.success) {
               const userRole = data.role || (user.toLowerCase() === 'admin' ? 'admin' : 'user');
+              
               localStorage.setItem("karaoke_admin_token", data.token);
               localStorage.setItem("karaoke_role", userRole);
+              localStorage.setItem("karaoke_login_time", Date.now().toString());
+              localStorage.setItem("karaoke_saved_username", user);
 
               authModal.classList.add("hidden");
+              if (loginPin) loginPin.value = ""; 
 
-              if (userRole === "admin") {
-                btnLoginModal.textContent = "⚙️ Gebruikersbeheer";
-                if (statusBar) statusBar.textContent = "Ingelogd als beheerder.";
-              } else {
-                btnLoginModal.textContent = "👤 Ingelogd";
-                if (statusBar) statusBar.textContent = "Ingelogd als gebruiker.";
-              }
+              checkAuthStatus();
             } else {
               alert("Inloggen mislukt: " + (data.message || "Onjuiste gegevens"));
               if (statusBar) statusBar.textContent = "Inloggen mislukt.";
