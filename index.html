@@ -45,6 +45,90 @@
       padding: 20px 16px;
     }
 
+    /* FULL-SCREEN LOGIN OVERLAY */
+    .login-screen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      z-index: 30000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    .login-screen-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .login-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    }
+
+    .login-logo-container {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 16px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-logo {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.4));
+    }
+
+    .login-card h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .login-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .login-card .form-group {
+      text-align: left;
+    }
+
+    .login-card input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 4px;
+    }
+
+    .login-card input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    /* HOOFDCONTAINER VAN DE APP */
     .container {
       width: 100%;
       max-width: 480px;
@@ -403,7 +487,7 @@
 
     .status-bar { margin-top: 18px; text-align: center; font-size: 0.75rem; color: var(--text-muted); }
 
-    /* Modal styling voor Auth / Admin */
+    /* Modal styling voor Admin */
     .modal-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 20000;
@@ -432,6 +516,30 @@
 </head>
 <body>
 
+  <!-- FULL-SCREEN INITIAL LOGIN OVERLAY -->
+  <div class="login-screen-overlay" id="authModal">
+    <div class="login-card">
+      <div class="login-logo-container">
+        <img src="logo.png" alt="Karaoke Logo" class="login-logo">
+      </div>
+      <h2>Karaoke Party</h2>
+      <p class="login-subtitle">Meld je aan om de app te openen</p>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginUser">Gebruikersnaam</label>
+          <input type="text" id="loginUser" required placeholder="Voer je gebruikersnaam in" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="loginPin">Wachtwoord / Pincode</label>
+          <input type="password" id="loginPin" required placeholder="****" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-submit">Aanmelden</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP INHOUD -->
   <div class="container">
     <header>
       <h1>Karaoke party</h1>
@@ -443,7 +551,7 @@
         Open Lokale .KAR Bestanden
       </button>
       <button type="button" class="btn-zip" id="btnLoginModal" style="background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.3);">
-        🔐 Inloggen / Beheer
+        🔐 Inloggen
       </button>
       <input type="file" id="zipInput" accept=".kar,.zip,application/x-zip-compressed,application/zip,application/octet-stream" multiple>
     </div>
@@ -601,28 +709,7 @@
       </div>
     </div>
 
-    <div class="status-bar" id="statusBar">Bestanden ophalen van NAS...</div>
-  </div>
-
-  <!-- Modal Auth (Inloggen) -->
-  <div class="modal-overlay" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-    <div class="modal-card">
-      <div class="modal-header">
-        <span class="modal-title" id="authTitle">🔐 Inloggen</span>
-        <button type="button" class="modal-close" id="btnCloseAuthModal" aria-label="Sluiten">✕</button>
-      </div>
-      <form id="loginForm">
-        <div class="form-group">
-          <label for="loginUser">Gebruikersnaam</label>
-          <input type="text" id="loginUser" required placeholder="Voer gebruikersnaam in" autocomplete="username">
-        </div>
-        <div class="form-group">
-          <label for="loginPin">Pincode / Wachtwoord</label>
-          <input type="password" id="loginPin" required placeholder="****" autocomplete="current-password">
-        </div>
-        <button type="submit" class="btn-submit">Aanmelden</button>
-      </form>
-    </div>
+    <div class="status-bar" id="statusBar">Log in om te beginnen...</div>
   </div>
 
   <!-- Modal Admin Panel -->
@@ -633,19 +720,19 @@
         <button type="button" class="modal-close" id="btnCloseAdminModal" aria-label="Sluiten">✕</button>
       </div>
       <div id="adminContent">
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Beheer hier karaokegebruikers en rechten.</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Beheer hier karaokegebruikers en maak nieuwe accounts aan.</p>
         <ul id="userList" style="list-style: none; margin-bottom: 12px; font-size: 0.85rem;"></ul>
-        <button type="button" class="btn-submit" id="btnAddUser" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color);">+ Nieuwe Gebruiker</button>
+        <button type="button" class="btn-submit" id="btnAddUser" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color);">+ Nieuwe Gebruiker Aanmaken</button>
       </div>
     </div>
   </div>
 
-  <!-- Javascript Modules Inladen -->
+  <!-- Javascript Modules -->
   <script src="auth.js"></script>
   <script src="admin.js"></script>
   <script src="player.js"></script>
 
-  <!-- Event Handler Binding script voor Knoppen & Modals -->
+  <!-- Login & Modal Handlers -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const btnOpenLocal = document.getElementById("btnOpenLocal");
@@ -653,58 +740,59 @@
       const btnLoginModal = document.getElementById("btnLoginModal");
       const authModal = document.getElementById("authModal");
       const adminModal = document.getElementById("adminModal");
-      const btnCloseAuthModal = document.getElementById("btnCloseAuthModal");
       const btnCloseAdminModal = document.getElementById("btnCloseAdminModal");
       const loginForm = document.getElementById("loginForm");
       const statusBar = document.getElementById("statusBar");
 
-      // 1. Lokale bestanden knop koppelen aan file input
+      // Check of er al een actieve sessie is
+      const token = localStorage.getItem("karaoke_admin_token");
+      const role = localStorage.getItem("karaoke_role");
+
+      if (token) {
+        authModal.classList.add("hidden");
+        if (role === "admin") {
+          btnLoginModal.textContent = "⚙️ Gebruikersbeheer";
+        } else {
+          btnLoginModal.textContent = "👤 Ingelogd";
+        }
+      }
+
+      // 1. Lokale bestanden knop
       if (btnOpenLocal && zipInput) {
         btnOpenLocal.addEventListener("click", () => zipInput.click());
       }
 
-      // 2. Inlog/Beheer knop logica
+      // 2. Beheer / Inlogknop
       if (btnLoginModal) {
         btnLoginModal.addEventListener("click", () => {
-          if (typeof isAdminLoggedIn === "function" && isAdminLoggedIn()) {
+          const currentRole = localStorage.getItem("karaoke_role");
+          if (currentRole === "admin") {
             if (adminModal) adminModal.classList.add("open");
+            if (typeof loadAdminUsers === "function") loadAdminUsers();
           } else {
-            if (authModal) {
-              authModal.classList.add("open");
-            } else if (typeof handleLogin === "function") {
-              handleLogin();
-            }
+            authModal.classList.remove("hidden");
           }
         });
       }
 
-      // 3. Modal Sluiten Knoppen & Backdrop Click
+      // 3. Modals sluiten
       const closeModal = (modal) => modal && modal.classList.remove("open");
 
-      if (btnCloseAuthModal && authModal) {
-        btnCloseAuthModal.addEventListener("click", () => closeModal(authModal));
-      }
       if (btnCloseAdminModal && adminModal) {
         btnCloseAdminModal.addEventListener("click", () => closeModal(adminModal));
       }
 
-      [authModal, adminModal].forEach((modal) => {
-        if (modal) {
-          modal.addEventListener("click", (e) => {
-            if (e.target === modal) closeModal(modal);
-          });
-        }
-      });
+      if (adminModal) {
+        adminModal.addEventListener("click", (e) => {
+          if (e.target === adminModal) closeModal(adminModal);
+        });
+      }
 
-      // Escape-toets ondersteuning voor het sluiten van modals
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          closeModal(authModal);
-          closeModal(adminModal);
-        }
+        if (e.key === "Escape") closeModal(adminModal);
       });
 
-      // 4. Inlogformulier verwerken via NAS API
+      // 4. Inloggen via NAS API
       if (loginForm) {
         loginForm.addEventListener("submit", async (e) => {
           e.preventDefault();
@@ -725,10 +813,19 @@
             const data = await response.json();
 
             if (data.success) {
+              const userRole = data.role || (user.toLowerCase() === 'admin' ? 'admin' : 'user');
               localStorage.setItem("karaoke_admin_token", data.token);
-              closeModal(authModal);
-              if (statusBar) statusBar.textContent = "Ingelogd als beheerder.";
-              alert("Succesvol ingelogd!");
+              localStorage.setItem("karaoke_role", userRole);
+
+              authModal.classList.add("hidden");
+
+              if (userRole === "admin") {
+                btnLoginModal.textContent = "⚙️ Gebruikersbeheer";
+                if (statusBar) statusBar.textContent = "Ingelogd als beheerder.";
+              } else {
+                btnLoginModal.textContent = "👤 Ingelogd";
+                if (statusBar) statusBar.textContent = "Ingelogd als gebruiker.";
+              }
             } else {
               alert("Inloggen mislukt: " + (data.message || "Onjuiste gegevens"));
               if (statusBar) statusBar.textContent = "Inloggen mislukt.";
