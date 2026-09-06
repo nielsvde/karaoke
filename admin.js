@@ -7,22 +7,23 @@ const btnCloseAdminModal = document.getElementById('btnCloseAdminModal');
 const userList = document.getElementById('userList');
 const btnAddUser = document.getElementById('btnAddUser');
 
-const API_BASE_URL = typeof NAS_INDEX_URL !== 'undefined' 
-  ? NAS_INDEX_URL 
+// Altijd expliciet naar api.php verwijzen
+const API_BASE_URL = typeof NAS_LOGIN_URL !== 'undefined' 
+  ? NAS_LOGIN_URL 
   : "https://karaokenas.synology.me:8444/karaoke/api.php";
 
 function openAdminModal() {
-  const user = window.AuthModule?.getCurrentUser();
-  if (!user || user.role !== 'admin') {
+  const role = localStorage.getItem("karaoke_role");
+  if (role !== 'admin') {
     alert("Toegang geweigerd: Geen beheerder.");
     return;
   }
-  adminModal.classList.add('open');
+  if (adminModal) adminModal.classList.add('open');
   loadUsers();
 }
 
 function closeAdminModal() {
-  adminModal.classList.remove('open');
+  if (adminModal) adminModal.classList.remove('open');
 }
 
 // 1. GEBRUIKERS OPHALEN & TONEN
@@ -246,7 +247,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Exporteer functies naar de window
+// Maak functies globaal beschikbaar
+window.loadAdminUsers = loadUsers;
 window.AdminModule = {
   openAdminModal,
   closeAdminModal,
