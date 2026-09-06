@@ -20,24 +20,66 @@ function updateDynamicStyles(activeViewOverride = null) {
       display: none !important;
     }
 
+    /* ==========================================
+       UNIFORME FULLSCREEN STYLING (ADMIN & USER)
+       ========================================== */
+    :fullscreen #lyricsWrapper,
+    #lyricsWrapper.fullscreen {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      z-index: 99999 !important;
+      background: var(--bg-dark, #121212) !important;
+    }
+
+    :fullscreen #lyricsContainer,
+    #lyricsWrapper.fullscreen #lyricsContainer,
+    body:has(:fullscreen) #lyricsContainer {
+      display: block !important;
+      width: 100% !important;
+      max-width: 900px !important;
+      height: 60vh !important;
+      overflow-y: hidden !important;
+    }
+
+    :fullscreen #fsPlayerOverlay,
+    #lyricsWrapper.fullscreen #fsPlayerOverlay,
+    body:has(:fullscreen) #fsPlayerOverlay {
+      display: flex !important;
+      position: absolute !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 100000 !important;
+    }
+
+    /* ==========================================
+       STYLING BUITEN FULLSCREEN
+       ========================================== */
     ${!showAdminUI ? `
-      /* Voor gewone gebruikers (of admin in gebruikersweergave): verberg lokale knop en lyrics buiten fullscreen */
-      #btnOpenLocal,
-      .btn-open-local,
-      #lyricsWrapper:not(.fullscreen),
+      /* Voor gewone gebruikers (of admin in gebruikersweergave) buiten fullscreen */
+      body:not(:has(:fullscreen)) #btnOpenLocal,
+      body:not(:has(:fullscreen)) .btn-open-local,
+      body:not(:has(:fullscreen)) #lyricsWrapper:not(.fullscreen),
       body:not(:has(:fullscreen)) #lyricsContainer,
       body:not(:has(:fullscreen)) .lyrics-container {
         display: none !important;
       }
     ` : `
-      /* Voor admins in beheerdersweergave: toon de lokale knop en het lyrics-vak */
-      #btnOpenLocal,
-      .btn-open-local {
+      /* Voor admins in beheerdersweergave buiten fullscreen */
+      body:not(:has(:fullscreen)) #btnOpenLocal,
+      body:not(:has(:fullscreen)) .btn-open-local {
         display: inline-flex !important;
       }
-      #lyricsWrapper,
-      #lyricsContainer,
-      .lyrics-container {
+      body:not(:has(:fullscreen)) #lyricsWrapper:not(.fullscreen),
+      body:not(:has(:fullscreen)) #lyricsContainer,
+      body:not(:has(:fullscreen)) .lyrics-container {
         display: block !important;
       }
     `}
