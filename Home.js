@@ -112,8 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!btnToggleView) {
     btnToggleView = document.createElement("button");
     btnToggleView.id = "btnToggleView";
-    btnToggleView.className = "btn-secondary";
-    btnToggleView.style.cssText = "display: none; margin: 10px auto; position: relative; z-index: 10;";
+    btnToggleView.type = "button";
+    btnToggleView.className = "btn-zip";
+    btnToggleView.style.display = "none";
   }
 
   window.setStartButtonState = function(ready, message) {
@@ -221,11 +222,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btnLoginModal) btnLoginModal.style.display = "none";
     }
 
-    // Configureer de wisselknop voor beheerders
+    // Configureer de wisselknop voor beheerders (Oranje accent, identieke layout als btnLogout)
     if (isActuallyAdmin) {
       btnToggleView.style.display = "flex";
       btnToggleView.textContent = activeView === "admin" ? "📱 Naar Gebruikersweergave" : "⚙️ Naar Adminweergave";
       
+      btnToggleView.style.position = "relative";
+      btnToggleView.style.margin = "10px auto";
+      btnToggleView.style.left = "auto";
+      btnToggleView.style.transform = "none";
+      btnToggleView.style.zIndex = "10";
+      
+      // Oranje glas-look styling
+      btnToggleView.style.background = "rgba(249, 115, 22, 0.15)";
+      btnToggleView.style.borderColor = "rgba(249, 115, 22, 0.35)";
+      btnToggleView.style.color = "#fdba74";
+
       if (btnToggleView.parentElement !== mainContainer) {
         mainContainer.appendChild(btnToggleView);
       }
@@ -242,7 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnLogout) {
       btnLogout.style.display = "flex";
       btnLogout.style.position = "relative";
-      btnLogout.style.margin = "20px auto";
+      btnLogout.style.margin = "10px auto 20px auto";
       btnLogout.style.left = "auto";
       btnLogout.style.transform = "none";
       btnLogout.style.zIndex = "10";
