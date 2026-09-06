@@ -20,29 +20,23 @@ function updateDynamicStyles(activeViewOverride = null) {
       display: none !important;
     }
 
-    /* Standaard: verberg het blokje voor tekstvertraging in fullscreen voor gewone gebruikers */
-    :fullscreen .delay-control,
-    :fullscreen #delayControl,
-    :fullscreen #lyricDelayBox,
-    :fullscreen .lyric-delay-container,
-    #lyricsWrapper.fullscreen .delay-control,
-    #lyricsWrapper.fullscreen #delayControl,
-    #lyricsWrapper.fullscreen #lyricDelayBox,
-    #lyricsWrapper.fullscreen .lyric-delay-container {
-      display: none !important;
-    }
-
     ${!showAdminUI ? `
-      /* Voor gewone gebruikers (of admin in gebruikersweergave): verberg lokale knop en lyrics buiten fullscreen */
+      /* VOOR GEWONEN GEBRUIKERS (of admin in gebruikersweergave): */
+      /* Verberg lokale knop, lyrics buiten fullscreen EN de vertragingsregeling */
       #btnOpenLocal,
       .btn-open-local,
       #lyricsWrapper:not(.fullscreen),
       body:not(:has(:fullscreen)) #lyricsContainer,
-      body:not(:has(:fullscreen)) .lyrics-container {
+      body:not(:has(:fullscreen)) .lyrics-container,
+      .delay-control,
+      #delayControl,
+      #lyricDelayBox,
+      .lyric-delay-container {
         display: none !important;
       }
     ` : `
-      /* Voor admins in beheerdersweergave: toon de lokale knop en het lyrics-vak */
+      /* VOOR ADMINS IN BEHEERDERSWEERGAVE: */
+      /* Toon de lokale knop en het lyrics-vak */
       #btnOpenLocal,
       .btn-open-local {
         display: inline-flex !important;
@@ -53,21 +47,17 @@ function updateDynamicStyles(activeViewOverride = null) {
         display: block !important;
       }
 
-      /* Toon het blokje van tekstvertraging wel in fullscreen wanneer ingelogd als admin */
-      :fullscreen .delay-control,
-      :fullscreen #delayControl,
-      :fullscreen #lyricDelayBox,
-      :fullscreen .lyric-delay-container,
-      #lyricsWrapper.fullscreen .delay-control,
-      #lyricsWrapper.fullscreen #delayControl,
-      #lyricsWrapper.fullscreen #lyricDelayBox,
-      #lyricsWrapper.fullscreen .lyric-delay-container {
+      /* Toon de vertragingsregeling voor admins (zowel in als buiten fullscreen) */
+      .delay-control,
+      #delayControl,
+      #lyricDelayBox,
+      .lyric-delay-container {
         display: flex !important;
         position: absolute !important;
         top: 20px !important;
         right: 20px !important;
         z-index: 999999 !important;
-        background: rgba(0, 0, 0, 0.7) !important;
+        background: rgba(0, 0, 0, 0.8) !important;
         padding: 8px 12px !important;
         border-radius: 8px !important;
         backdrop-filter: blur(5px) !important;
