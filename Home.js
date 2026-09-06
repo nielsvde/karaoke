@@ -20,6 +20,18 @@ function updateDynamicStyles(activeViewOverride = null) {
       display: none !important;
     }
 
+    /* Standaard: verberg het blokje voor tekstvertraging in fullscreen voor gewone gebruikers */
+    :fullscreen .delay-control,
+    :fullscreen #delayControl,
+    :fullscreen #lyricDelayBox,
+    :fullscreen .lyric-delay-container,
+    #lyricsWrapper.fullscreen .delay-control,
+    #lyricsWrapper.fullscreen #delayControl,
+    #lyricsWrapper.fullscreen #lyricDelayBox,
+    #lyricsWrapper.fullscreen .lyric-delay-container {
+      display: none !important;
+    }
+
     ${!showAdminUI ? `
       /* Voor gewone gebruikers (of admin in gebruikersweergave): verberg lokale knop en lyrics buiten fullscreen */
       #btnOpenLocal,
@@ -39,6 +51,26 @@ function updateDynamicStyles(activeViewOverride = null) {
       #lyricsContainer,
       .lyrics-container {
         display: block !important;
+      }
+
+      /* Toon het blokje van tekstvertraging wel in fullscreen wanneer ingelogd als admin */
+      :fullscreen .delay-control,
+      :fullscreen #delayControl,
+      :fullscreen #lyricDelayBox,
+      :fullscreen .lyric-delay-container,
+      #lyricsWrapper.fullscreen .delay-control,
+      #lyricsWrapper.fullscreen #delayControl,
+      #lyricsWrapper.fullscreen #lyricDelayBox,
+      #lyricsWrapper.fullscreen .lyric-delay-container {
+        display: flex !important;
+        position: absolute !important;
+        top: 20px !important;
+        right: 20px !important;
+        z-index: 999999 !important;
+        background: rgba(0, 0, 0, 0.7) !important;
+        padding: 8px 12px !important;
+        border-radius: 8px !important;
+        backdrop-filter: blur(5px) !important;
       }
     `}
   `;
