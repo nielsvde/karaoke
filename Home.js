@@ -8,9 +8,11 @@ const hideStyle = document.createElement("style");
 hideStyle.id = "dynamic-hide-style";
 document.head.appendChild(hideStyle);
 
-function updateDynamicStyles() {
+function updateDynamicStyles(activeViewOverride = null) {
   const role = localStorage.getItem("karaoke_role");
   const isAdmin = role === "admin";
+  // Als een admin tijdelijk de gebruikers-view bekijkt, behandelen we de styling als user
+  const showAdminUI = isAdmin && activeViewOverride !== "user";
 
   hideStyle.textContent = `
     #statusBar,
@@ -18,8 +20,8 @@ function updateDynamicStyles() {
       display: none !important;
     }
 
-    ${!isAdmin ? `
-      /* Voor gewone gebruikers: verberg de lokale knop en lyrics buiten fullscreen */
+    ${!showAdminUI ? `
+      /* Voor gewone gebruikers (of admin in gebruikersweergave): verberg lokale knop en lyrics buiten fullscreen */
       #btnOpenLocal,
       .btn-open-local,
       #lyricsWrapper:not(.fullscreen),
@@ -28,7 +30,7 @@ function updateDynamicStyles() {
         display: none !important;
       }
     ` : `
-      /* Voor admins: toon de lokale knop en het lyrics-vak in het beheerscherm */
+      /* Voor admins in beheerdersweergave: toon de lokale knop en het lyrics-vak */
       #btnOpenLocal,
       .btn-open-local {
         display: inline-flex !important;
@@ -83,11 +85,15 @@ document.addEventListener("DOMContentLoaded", () => {
     loginUser.value = savedUsername;
   }
 
-  /**
-   * Beheert de status en klikbaarheid van de 'Start Karaoke' knop
-   * @param {boolean} ready - Is het nummer volledig ingeladen (audio + lyrics)?
-   * @param {string} [message] - Optionele statustekst om weer te geven
-   */
+  // --- WISSELKNOP VOOR ADMIN MAKEN ---
+  let btnToggleView = document.getElementById("btnToggleView");
+  if (!btnToggleView) {
+    btnToggleView = document.createElement("button");
+    btnToggleView.id = "btnToggleView";
+    btnToggleView.className = "btn-secondary";
+    btnToggleView.style.cssText = "display: none; margin: 10px auto; position: relative; z-index: 10;";
+  }
+
   window.setStartButtonState = function(ready, message) {
     if (userStartBtn) {
       userStartBtn.disabled = !ready;
@@ -136,13 +142,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       window.renderUserLibrary(window.playlist, (index) => {
         if (typeof window.loadTrackFromPlaylist === 'function') {
-          // Deactiveer de knop totdat sporen en lyrics geladen zijn
           window.setStartButtonState(false, "Nummer inladen...");
           window.loadTrackFromPlaylist(index);
         }
       });
 
-      // Laad standaard een willekeurig nummer in zodra de afspeellijst geladen is
       if (window.playlist.length > 0) {
         const randomIndex = Math.floor(Math.random() * window.playlist.length);
         if (typeof window.loadTrackFromPlaylist === 'function') {
@@ -163,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem("karaoke_role");
     localStorage.removeItem("karaoke_login_time");
 
-    // Update stijlen direct bij uitloggen
+    if (btnToggleView) btnToggleView.style.display = "none";
     updateDynamicStyles();
 
     if (authModal) authModal.classList.remove("hidden");
@@ -171,13 +175,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnLogout) btnLogout.style.display = "none";
   }
 
-  function applyRoleUI(role) {
-    // Dynamische CSS instellen op basis van de ingelogde rol
-    updateDynamicStyles();
-
+  function applyRoleUI(role, targetView = null) {
     const mainContainer = document.querySelector(".container") || document.body;
+    const isActuallyAdmin = role === "admin";
+    
+    // Bepaal de actieve weergave (standaard 'admin' als admin ingelogd is)
+    const activeView = targetView || (isActuallyAdmin ? "admin" : "user");
 
-    if (role === "admin") {
+    updateDynamicStyles(activeView);
+
+    if (activeView === "admin") {
       if (userStartView) userStartView.style.display = "none";
       if (adminControlsView) adminControlsView.style.display = "block";
       if (advancedMixerSection) advancedMixerSection.style.display = "block";
@@ -192,7 +199,24 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btnLoginModal) btnLoginModal.style.display = "none";
     }
 
-    // Uitlogknop onder de speler/container plaatsen
+    // Configureer de wisselknop voor beheerders
+    if (isActuallyAdmin) {
+      btnToggleView.style.display = "flex";
+      btnToggleView.textContent = activeView === "admin" ? "📱 Naar Gebruikersweergave" : "⚙️ Naar Adminweergave";
+      
+      if (btnToggleView.parentElement !== mainContainer) {
+        mainContainer.appendChild(btnToggleView);
+      }
+
+      btnToggleView.onclick = () => {
+        const newTarget = activeView === "admin" ? "user" : "admin";
+        applyRoleUI(role, newTarget);
+      };
+    } else {
+      btnToggleView.style.display = "none";
+    }
+
+    // Uitlogknop onder de container plaatsen
     if (btnLogout) {
       btnLogout.style.display = "flex";
       btnLogout.style.position = "relative";
@@ -270,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Keer automatisch terug naar het home scherm wanneer een nummer is afgelopen
+  // Keer automatisch terug naar het scherm wanneer een nummer is afgelopen
   const audioPlayer = document.getElementById("audioPlayer") || document.querySelector("audio");
   if (audioPlayer) {
     audioPlayer.addEventListener("ended", () => {
@@ -362,7 +386,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (userHeroTitle) userHeroTitle.textContent = item.title || item.name;
         
-        // Schakel de knop uit tijdens het laden van de sporen/lyrics
         window.setStartButtonState(false, "Nummer inladen...");
 
         if (onSelectCallback) onSelectCallback(index);
