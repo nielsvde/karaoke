@@ -519,7 +519,24 @@ function updateLyricsDisplay(currentPos) {
       const newEl = document.getElementById(`line-${newLineIndex}`);
       if (newEl) {
         newEl.classList.add('active');
-        newEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Check of fullscreen momenteel actief is
+        const isFullscreen = !!(document.fullscreenElement || lyricsWrapper?.classList.contains('fullscreen'));
+
+        // Check of de gebruiker ingelogd is als admin
+        const isAdmin = localStorage.getItem('role') === 'admin' || localStorage.getItem('isAdmin') === 'true';
+
+        // Check of het homeScreen element momenteel zichtbaar is
+        homeScreen = document.getElementById('homeScreen');
+        const isHomeVisible = homeScreen && !homeScreen.classList.contains('hidden') && homeScreen.style.display !== 'none';
+
+        // Bepaal of scrollen moet worden geblokkeerd:
+        // Alleen als admin actief is op het home-scherm EN we géén fullscreen gebruiken
+        const shouldPreventScroll = isAdmin && isHomeVisible && !isFullscreen;
+
+        if (!shouldPreventScroll) {
+          newEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
     }
     activeLineIndex = newLineIndex;
