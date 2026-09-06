@@ -3,21 +3,47 @@
  * en synchronisatie van de NAS-afspeellijst.
  */
 
-// Visueel verbergen van de ongewenste elementen (lokale knop, statusbalk en lyrics buiten fullscreen)
+// Dynamische CSS-styling afhankelijk van de rol
 const hideStyle = document.createElement("style");
-hideStyle.textContent = `
-  #btnOpenLocal,
-  .btn-open-local,
-  #statusBar,
-  .status-bar,
-  /* Verberg lyrics-elementen alleen wanneer NIET in fullscreen modus */
-  #lyricsWrapper:not(.fullscreen),
-  body:not(:has(:fullscreen)) #lyricsContainer,
-  body:not(:has(:fullscreen)) .lyrics-container {
-    display: none !important;
-  }
-`;
+hideStyle.id = "dynamic-hide-style";
 document.head.appendChild(hideStyle);
+
+function updateDynamicStyles() {
+  const role = localStorage.getItem("karaoke_role");
+  const isAdmin = role === "admin";
+
+  hideStyle.textContent = `
+    #statusBar,
+    .status-bar {
+      display: none !important;
+    }
+
+    ${!isAdmin ? `
+      /* Voor gewone gebruikers: verberg de lokale knop en lyrics buiten fullscreen */
+      #btnOpenLocal,
+      .btn-open-local,
+      #lyricsWrapper:not(.fullscreen),
+      body:not(:has(:fullscreen)) #lyricsContainer,
+      body:not(:has(:fullscreen)) .lyrics-container {
+        display: none !important;
+      }
+    ` : `
+      /* Voor admins: toon de lokale knop en het lyrics-vak in het beheerscherm */
+      #btnOpenLocal,
+      .btn-open-local {
+        display: inline-flex !important;
+      }
+      #lyricsWrapper,
+      #lyricsContainer,
+      .lyrics-container {
+        display: block !important;
+      }
+    `}
+  `;
+}
+
+// Direct uitvoeren voor initiële weergave
+updateDynamicStyles();
 
 document.addEventListener("DOMContentLoaded", () => {
   // DOM Elementen
@@ -137,12 +163,18 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem("karaoke_role");
     localStorage.removeItem("karaoke_login_time");
 
+    // Update stijlen direct bij uitloggen
+    updateDynamicStyles();
+
     if (authModal) authModal.classList.remove("hidden");
     if (btnLoginModal) btnLoginModal.style.display = "inline-block";
     if (btnLogout) btnLogout.style.display = "none";
   }
 
   function applyRoleUI(role) {
+    // Dynamische CSS instellen op basis van de ingelogde rol
+    updateDynamicStyles();
+
     const mainContainer = document.querySelector(".container") || document.body;
 
     if (role === "admin") {
@@ -217,7 +249,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Start Karaoke Knop
   if (userStartBtn) {
     userStartBtn.addEventListener("click", () => {
-      // Controleer extra of de knop niet per ongeluk geklikt kan worden als deze disabled is
       if (userStartBtn.disabled) return;
 
       const playBtn = document.getElementById("playBtn");
